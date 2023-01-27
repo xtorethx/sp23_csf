@@ -10,9 +10,9 @@
 UInt256 uint256_create_from_u64(uint64_t val) {
   UInt256 result;
   result.data[0] = val;
-  result.data[1] = { 0 };
-  result.data[2] = { 0 };
-  result.data[3] = { 0 };
+  result.data[1] = 0;
+  result.data[2] = 0;
+  result.data[3] = 0;
   return result;
 }
 
@@ -21,7 +21,7 @@ UInt256 uint256_create_from_u64(uint64_t val) {
 // at index 3 is the most significant.
 UInt256 uint256_create(const uint64_t data[4]) {
   UInt256 result;
-  result.data[0] = data[0]};
+  result.data[0] = data[0];
   result.data[1] = data[1];
   result.data[2] = data[2];
   result.data[3] = data[3];
@@ -55,7 +55,14 @@ uint64_t uint256_get_bits(UInt256 val, unsigned index) {
 // Compute the sum of two UInt256 values.
 UInt256 uint256_add(UInt256 left, UInt256 right) {
   UInt256 sum;
-  // TODO: implement
+  int l = 0;
+  int r = 0;
+  int carry = 0;
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; i < 64) {
+      l = left.data[i][j] & (1 << i) ? '1' : '0';
+    }
+  }
   return sum;
 }
 
