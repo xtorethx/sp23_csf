@@ -28,6 +28,7 @@ UInt256 uint256_create(const uint64_t data[4]) {
   return result;
 }
 
+//padding
 // Create a UInt256 value from a string of hexadecimal digits.
 UInt256 uint256_create_from_hex(const char *hex) {
   UInt256 result;
@@ -55,14 +56,7 @@ uint64_t uint256_get_bits(UInt256 val, unsigned index) {
 // Compute the sum of two UInt256 values.
 UInt256 uint256_add(UInt256 left, UInt256 right) {
   UInt256 sum;
-  int l = 0;
-  int r = 0;
-  int carry = 0;
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; i < 64) {
-      l = left.data[i][j] & (1 << i) ? '1' : '0';
-    }
-  }
+
   return sum;
 }
 
