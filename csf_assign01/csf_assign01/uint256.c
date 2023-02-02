@@ -53,9 +53,33 @@ uint64_t uint256_get_bits(UInt256 val, unsigned index) {
   return bits;
 }
 
+//check if adding 2 uint64_t values results in overflow
+int check_overflow(uint64_t top, uint64_t bot, uint64_t carry) {
+  uint64_t sum = top + bot + carry;
+  if (sum < top) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
 // Compute the sum of two UInt256 values.
 UInt256 uint256_add(UInt256 left, UInt256 right) {
   UInt256 sum;
+  uint64_t carry = 0UL;
+  for (int i = 0; i < 4; i++) {
+    sum.data[i] = left.data[i] + right.data[i] + carry;
+
+    if (check_overflow(left.data[i], right.data[i], carry)) {
+      carry = 1UL;
+    } else {
+      carry = 0UL;
+    }
+  }
+
+  if (carry) {
+    sum = uint256_create_from_u64(0UL);
+  }
 
   return sum;
 }
