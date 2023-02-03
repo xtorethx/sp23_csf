@@ -76,18 +76,33 @@ UInt256 uint256_add(UInt256 left, UInt256 right) {
       carry = 0UL;
     }
   }
-
-  if (carry) {
-    sum = uint256_create_from_u64(0UL);
-  }
-
+  
   return sum;
 }
 
+// invert the bits of a Uint256 value and add 1 to negate
+UInt256 negate(UInt256 num) {
+  UInt256 negated;
+
+  for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++) {
+      negated.data[i] = ~num.data[i];
+    }
+  }
+
+  negated = uint256_add(negated, uint256_create_from_u64(1UL));
+
+  return negated;
+}
 // Compute the difference of two UInt256 values.
 UInt256 uint256_sub(UInt256 left, UInt256 right) {
   UInt256 result;
-  // TODO: implement
+
+  result = uint256_add(left, negate(right));
+  printf("%lu\n", result.data[0]);
+  printf("%lu\n", result.data[1]);
+  printf("%lu\n", result.data[2]);
+  printf("%lu\n", result.data[3]);
   return result;
 }
 
