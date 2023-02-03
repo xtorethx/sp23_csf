@@ -32,9 +32,51 @@ UInt256 uint256_create(const uint64_t data[4]) {
 // Create a UInt256 value from a string of hexadecimal digits.
 UInt256 uint256_create_from_hex(const char *hex) {
   UInt256 result;
-  // TODO: implement
+  size_t len = strlen(hex);
+  char hexcopy[65];
+  hexcopy[64] = '\0';
+  uint64_t data[4];
+  char *end;
+  if (len < 64) {
+      for (int i = 0; i < (64-len); i++) {
+          hexcopy[i] = '0';
+      }
+      for (int i = (64-len); i < 64; i++) {
+          hexcopy[i] = *(hex+(i-(64-len)));
+      }
+      //std::cout << hexcopy << std::endl;  
+  }
+  
+  else if (len > 64) {
+      for (int i = (len - 64); i < len; i++) {
+          hexcopy[i-(len-64)] = *(hex+i);
+      }
+      //std::cout << hexcopy << std::endl; 
+  }
+
+  else {
+    for (int i = 0; i < 64; i++) {
+      hexcopy[i] = *(hex + i);
+    }
+  }
+
+  int arrind = 3;
+  char substr[17];
+  substr[16] = '\0';
+  for (int i = 0; i < 64; i = i + 16) {
+    for (int j = i; j < i + 16; j++) {
+      substr[j%16] = *(hexcopy + j);
+      //std::cout << *(hexcopy + j) << std::endl;
+    }
+    //std::cout << substr << std::endl;
+    data[arrind] = strtol(substr, &end, 16);
+    //std::cout << data[arrind] << std::endl;
+    arrind--;
+  }
+  result = uint256_create(data);
   return result;
 }
+
 
 // Return a dynamically-allocated string of hex digits representing the
 // given UInt256 value.
