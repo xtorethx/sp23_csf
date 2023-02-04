@@ -97,8 +97,13 @@ uint64_t uint256_get_bits(UInt256 val, unsigned index) {
 
 //check if adding 2 uint64_t values results in overflow
 int check_overflow(uint64_t top, uint64_t bot, uint64_t carry) {
-  uint64_t sum = top + bot + carry;
+  uint64_t sum = top + bot;
+  uint64_t sum2 = sum + carry;
+  // write a test for 0 + max + 1
+  // not less than top
   if (sum < top) {
+    return 1;
+  } else if (sum2 < sum) {
     return 1;
   } else {
     return 0;
@@ -118,7 +123,7 @@ UInt256 uint256_add(UInt256 left, UInt256 right) {
       carry = 0UL;
     }
   }
-  
+
   return sum;
 }
 
@@ -126,11 +131,11 @@ UInt256 uint256_add(UInt256 left, UInt256 right) {
 UInt256 negate(UInt256 num) {
   UInt256 negated;
 
+
   for (int i = 0; i < 4; i++) {
-    for (int i = 0; i < 4; i++) {
-      negated.data[i] = ~num.data[i];
-    }
+    negated.data[i] = ~num.data[i];
   }
+  
 
   negated = uint256_add(negated, uint256_create_from_u64(1UL));
 
@@ -141,16 +146,41 @@ UInt256 uint256_sub(UInt256 left, UInt256 right) {
   UInt256 result;
 
   result = uint256_add(left, negate(right));
-  printf("%lu\n", result.data[0]);
-  printf("%lu\n", result.data[1]);
-  printf("%lu\n", result.data[2]);
-  printf("%lu\n", result.data[3]);
+  // printf("%lu\n", result.data[0]);
+  // printf("%lu\n", result.data[1]);
+  // printf("%lu\n", result.data[2]);
+  // printf("%lu\n", result.data[3]);
   return result;
 }
 
+UInt256 shift_n_chunks (UInt256 num, int n) {
+  UInt256 new;
+  new = uint256_create_from_u64(0UL);
+
+  for (int i = 1; i < n+1; i++) {
+    for (int j = 4; i > n; j--) {
+      new.data[j] = num.data[j-i];
+    }
+  }
+
+  return new;
+}
+
+int uint256_bit_is_set(UInt256 val, unsigned index) {
+  int num_chunks = 0;
+  int tmp = index;
+  while (tmp - 64 > 0) {
+    num_chunks++;
+    tmp = tmp - 64;
+  }
+
+  return val.data[num_chunks] && (1 << tmp);
+}
 // Compute the product of two UInt256 values.
 UInt256 uint256_mul(UInt256 left, UInt256 right) {
   UInt256 product;
-  // TODO: implement
+  product = uint256_create_from_u64(0UL);
+
+  
   return product;
 }
