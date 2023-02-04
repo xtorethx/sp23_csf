@@ -80,12 +80,13 @@ UInt256 uint256_create_from_hex(const char *hex) {
 // Return a dynamically-allocated string of hex digits representing the
 // given UInt256 value.
 char *uint256_format_as_hex(UInt256 val) {
-  char *hex = (char*) malloc(sizeof(char[65]));
+  
+  char *hex = (char*) calloc(65, sizeof(char));
   hex[64] = '\0';
   int count = 0;
   for (int i = 3; i >=0; i--) {
     uint64_t data = val.data[i];
-    char substr[17];
+    char substr[17] = {0};
     sprintf(substr, "%lx", data);
     //std::cout << data << ' ' << strlen(substr) << ' ' << substr << std::endl;
     substr[16] = '\0';
