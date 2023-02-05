@@ -140,11 +140,11 @@ void test_create(TestObjs *objs) {
 void test_create_from_hex(TestObjs *objs) {
   UInt256 val;
 
-  // val = uint256_create_from_hex(objs->hex1);
-  // ASSERT(check(val, 0x0UL, 0x0UL, 0x0UL, 0x0UL));
+  val = uint256_create_from_hex(objs->hex1);
+  ASSERT(check(val, 0x0UL, 0x0UL, 0x0UL, 0x0UL));
 
-  // val = uint256_create_from_hex(objs->hex2);
-  // ASSERT(check(val, 0x0UL, 0x0UL, 0x0UL, 0xcafeUL));
+  val = uint256_create_from_hex(objs->hex2);
+  ASSERT(check(val, 0x0UL, 0x0UL, 0x0UL, 0xcafeUL));
 
   val = uint256_create_from_hex(objs->hex3);
   ASSERT(check(val, 0x4a4b72ebb654226UL, 0xef77ed83d884f494UL, 0x0e4243bc3913ceafUL, 0x5781b28d25fb00b0UL));
