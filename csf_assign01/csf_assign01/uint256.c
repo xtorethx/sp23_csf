@@ -78,6 +78,21 @@ UInt256 uint256_create_from_hex(const char *hex) {
   return result;
 }
 
+int leadingzeroindex(char *hex) {
+  int leadingzeroind = -1;
+  int i = 0;
+  while (i < strlen(hex) && *(hex + i) == '0') {
+      ++leadingzeroind;
+      ++i;
+  }
+  if (leadingzeroindex == -1) {
+    return 0;
+  }
+  if (i == strlen(hex)){
+    return (strlen(hex) - 1);
+  }
+  return i;
+}
 
 // Return a dynamically-allocated string of hex digits representing the
 // given UInt256 value.
@@ -85,22 +100,27 @@ char *uint256_format_as_hex(UInt256 val) {
   char *hex = (char*) calloc(65, sizeof(char));
   hex[64] = '\0';
   int count = 0;
+  int next = 0;
   for (int i = 3; i >=0; i--) {
-    uint64_t data = val.data[i];
     char substr[17] = {0};
-    sprintf(substr, "%lx", data);
-    //std::cout << data << ' ' << strlen(substr) << ' ' << substr << std::endl;
     substr[16] = '\0';
-    int l = 0;
+    uint64_t data = val.data[i];
+    sprintf(substr, "%lx", data);
     int j = count*16;
     for (int k = j; k < j+strlen(substr); k++) {
-      hex[l] = substr[k%16];
-      //std::cout << l << ' ' << substr [k%16] << ' ' << hex[k] << std::endl;
-      l++;
+      hex[next] = substr[k%16];
+      next++;
     }
     count++;
   }
-  return hex;
+  int leadingzeroind = leadingzeroindex(hex);
+  char *trunc = (char*) calloc((strlen(hex) - leadingzeroind + 1), sizeof(char));
+  trunc[strlen(hex)-leadingzeroind] = '\0';
+  for (int i = 0; i < strlen(hex)-leadingzeroind; i++) {
+    trunc[i] = hex[leadingzeroind+i];
+  }
+  free(hex);
+  return trunc;
 }
 
 // Get 64 bits of data from a UInt256 value.
