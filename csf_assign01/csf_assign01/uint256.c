@@ -32,10 +32,10 @@ UInt256 uint256_create(const uint64_t data[4]) {
 UInt256 uint256_create_from_hex(const char *hex) {
   UInt256 result;
   size_t len = strlen(hex);
-  char hexcopy[65];
+  char hexcopy[65] = {0};
   hexcopy[64] = '\0';
-  uint64_t data[4];
-  char *end;
+  uint64_t data[5] = {0};
+  data[5] = '\0';
   if (len < 64) {
       for (int i = 0; i < (64-len); i++) {
           hexcopy[i] = '0';
@@ -60,15 +60,17 @@ UInt256 uint256_create_from_hex(const char *hex) {
   }
 
   int arrind = 3;
-  char substr[17];
-  substr[16] = '\0';
+  
   for (int i = 0; i < 64; i = i + 16) {
+    char substr[17] = {0};
+    substr[16] = '\0';
+    char *end = &(substr[16]);
     for (int j = i; j < i + 16; j++) {
       substr[j%16] = *(hexcopy + j);
       //std::cout << *(hexcopy + j) << std::endl;
     }
     //std::cout << substr << std::endl;
-    data[arrind] = strtol(substr, &end, 16);
+    data[arrind] = strtoul(substr, &end, 16);
     //std::cout << data[arrind] << std::endl;
     arrind--;
   }
@@ -80,7 +82,6 @@ UInt256 uint256_create_from_hex(const char *hex) {
 // Return a dynamically-allocated string of hex digits representing the
 // given UInt256 value.
 char *uint256_format_as_hex(UInt256 val) {
-  
   char *hex = (char*) calloc(65, sizeof(char));
   hex[64] = '\0';
   int count = 0;
