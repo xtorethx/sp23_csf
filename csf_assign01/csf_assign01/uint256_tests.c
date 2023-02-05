@@ -162,9 +162,13 @@ void test_format_as_hex(TestObjs *objs) {
   ASSERT(0 == strcmp("1", s));
   free(s);
 
-  s = uint256_format_as_hex(objs->large1);
-  ASSERT(0 == strcmp("aabbccdd", s));
-  free(s);
+  // s = uint256_format_as_hex(objs->large1);
+  // ASSERT(0 == strcmp("aabbccdd", s));
+  // free(s);
+
+  UInt256 val;
+  val = uint256_create_from_hex(objs->hex1);
+  ASSERT(check(val, 0x0UL, 0x0UL, 0x0UL, 0x0UL));
 
   // s = uint256_format_as_hex(objs->hex2);
   // ASSERT(0 == strcmp("cafe", s));

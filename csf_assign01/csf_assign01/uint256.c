@@ -105,7 +105,7 @@ char *uint256_format_as_hex(UInt256 val) {
     char substr[17] = {0};
     substr[16] = '\0';
     uint64_t data = val.data[i];
-    sprintf(substr, "%lx", data);
+    sprintf(substr, "%016lx", data);
     int j = count*16;
     for (int k = j; k < j+strlen(substr); k++) {
       hex[next] = substr[k%16];
