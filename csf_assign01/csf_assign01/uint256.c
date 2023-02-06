@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "uint256.h"
+#include <stdbool.h>
 
 // Create a UInt256 value from a single uint64_t value.
 // Only the least-significant 64 bits are initialized directly,
@@ -85,7 +86,7 @@ int leadingzeroindex(char *hex) {
       ++leadingzeroind;
       ++i;
   }
-  if (leadingzeroindex == -1) {
+  if (leadingzeroind == -1) {
     return 0;
   }
   if (i == (int) strlen(hex)){
@@ -201,28 +202,24 @@ UInt256 shift_n_chunks (UInt256 num, int n) {
   return new;
 }
 
-int uint256_bit_is_set(UInt256 val, unsigned index) {
+bool uint256_bit_is_set(UInt256 val, unsigned index) {
   int num_chunks = 0;
-  int tmp = index;
-  while (tmp - 64 >= 0) {
+  unsigned tmp = index;
+  while (tmp >= 64) {
     num_chunks++;
     tmp = tmp - 64;
   }
 
-  return val.data[num_chunks] & (1UL << tmp);
+  return (val.data[num_chunks] & (1UL << tmp)) != 0;
 }
 
 UInt256 uint256_leftshift(UInt256 val, unsigned shift) {
   UInt256 new_val;
-  int num_chunks = 0;
-  int tmp = shift;
-  uint64_t left;
-  uint64_t right;
+  int num_chunks = shift / 64;
+  unsigned tmp = shift % 64;
+  uint64_t left = 0UL;
+  uint64_t right = 0UL;
 
-  while (tmp - 64 >= 0) {
-    num_chunks++;
-    tmp = tmp - 64;
-  }
   new_val = shift_n_chunks(val, num_chunks);
 
   if (tmp == 0) {
