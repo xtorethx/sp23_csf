@@ -37,7 +37,7 @@ UInt256 uint256_create_from_hex(const char *hex) {
   uint64_t data[5] = {0};
   data[5] = '\0';
   if (len < 64) {
-      for (int i = 0; i < (64-len); i++) {
+      for (int i = 0; i < (int) (64-len); i++) {
           hexcopy[i] = '0';
       }
       for (int i = (64-len); i < 64; i++) {
@@ -47,7 +47,7 @@ UInt256 uint256_create_from_hex(const char *hex) {
   }
   
   else if (len > 64) {
-      for (int i = (len - 64); i < len; i++) {
+      for (int i = (len - 64); i < (int) len; i++) {
           hexcopy[i-(len-64)] = *(hex+i);
       }
       //std::cout << hexcopy << std::endl; 
@@ -81,14 +81,14 @@ UInt256 uint256_create_from_hex(const char *hex) {
 int leadingzeroindex(char *hex) {
   int leadingzeroind = -1;
   int i = 0;
-  while (i < strlen(hex) && *(hex + i) == '0') {
+  while (i < (int) strlen(hex) && *(hex + i) == '0') {
       ++leadingzeroind;
       ++i;
   }
   if (leadingzeroindex == -1) {
     return 0;
   }
-  if (i == strlen(hex)){
+  if (i == (int) strlen(hex)){
     return (strlen(hex) - 1);
   }
   return i;
@@ -107,7 +107,7 @@ char *uint256_format_as_hex(UInt256 val) {
     uint64_t data = val.data[i];
     sprintf(substr, "%016lx", data);
     int j = count*16;
-    for (int k = j; k < j+strlen(substr); k++) {
+    for (int k = j; k < j+ (int) strlen(substr); k++) {
       hex[next] = substr[k%16];
       next++;
     }
@@ -116,7 +116,7 @@ char *uint256_format_as_hex(UInt256 val) {
   int leadingzeroind = leadingzeroindex(hex);
   char *trunc = (char*) calloc((strlen(hex) - leadingzeroind + 1), sizeof(char));
   trunc[strlen(hex)-leadingzeroind] = '\0';
-  for (int i = 0; i < strlen(hex)-leadingzeroind; i++) {
+  for (int i = 0; i < (int) strlen(hex)-leadingzeroind; i++) {
     trunc[i] = hex[leadingzeroind+i];
   }
   free(hex);
@@ -194,10 +194,8 @@ UInt256 shift_n_chunks (UInt256 num, int n) {
   UInt256 new;
   new = uint256_create_from_u64(0UL);
 
-  for (int i = 1; i < n+1; i++) {
-    for (int j = 4; i > n; j--) {
-      new.data[j] = num.data[j-i];
-    }
+  for (int i = n; i < 4; i++) {
+    new.data[i] = num.data[i - n];
   }
 
   return new;
@@ -206,18 +204,58 @@ UInt256 shift_n_chunks (UInt256 num, int n) {
 int uint256_bit_is_set(UInt256 val, unsigned index) {
   int num_chunks = 0;
   int tmp = index;
-  while (tmp - 64 > 0) {
+  while (tmp - 64 >= 0) {
     num_chunks++;
     tmp = tmp - 64;
   }
 
-  return val.data[num_chunks] && (1 << tmp);
+  return val.data[num_chunks] & (1UL << tmp);
 }
+
+UInt256 uint256_leftshift(UInt256 val, unsigned shift) {
+  UInt256 new_val;
+  int num_chunks = 0;
+  int tmp = shift;
+  uint64_t left;
+  uint64_t right;
+
+  while (tmp - 64 >= 0) {
+    num_chunks++;
+    tmp = tmp - 64;
+  }
+  new_val = shift_n_chunks(val, num_chunks);
+
+  if (tmp == 0) {
+    return new_val;
+  }
+  
+  right = new_val.data[num_chunks] >> (64 - tmp);
+  new_val.data[num_chunks] = new_val.data[num_chunks] << tmp;
+
+  for (int i = num_chunks + 1; i < 4; i++) {
+    left = new_val.data[i] << tmp;
+    new_val.data[i] = left + right;
+    right = new_val.data[i] >> (64 - tmp);
+  }
+
+  return new_val;
+}
+
 // Compute the product of two UInt256 values.
 UInt256 uint256_mul(UInt256 left, UInt256 right) {
   UInt256 product;
   product = uint256_create_from_u64(0UL);
 
-  
+  for (int i = 0; i < 256; i++) {
+    if (uint256_bit_is_set(left, i)) {
+      product = uint256_add(product, uint256_leftshift(right, i));
+    }
+  }
+
+  printf("%lu\n", product.data[0]);
+  printf("%lu\n", product.data[1]);
+  printf("%lu\n", product.data[2]);
+  printf("%lu\n", product.data[3]);
+
   return product;
 }
