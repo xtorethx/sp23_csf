@@ -282,7 +282,7 @@ UInt256 uint256_sub(UInt256 left, UInt256 right) {
 
 
 /*
- * Helper function; left shift by an order of 64 bits
+ * Helper function; left shift by an n multiple of 64 bits
  *
  * Parameters:
  *   num - UInt256 value
@@ -302,7 +302,7 @@ UInt256 shift_n_chunks (UInt256 num, int n) {
 
 
 /*
- * Helper function; returns if bit at index of binary representation 
+ * Helper function; returns if bit is 1 at index of binary representation 
  * of val is set to 1
  *
  * Parameters:
@@ -346,16 +346,12 @@ UInt256 uint256_leftshift(UInt256 val, unsigned shift) {
     return new_val;
   }
   right = new_val.data[num_chunks] >> (64 - tmp);
-  // right = set_zeros(right, tmp, 63);
   left = new_val.data[num_chunks] << tmp;
-  // left = set_zeros(left, 0, tmp - 1);
   new_val.data[num_chunks] = left;
   for (int i = num_chunks + 1; i < 4; i++) {
     left = new_val.data[i] << tmp;
-    // left = set_zeros(left, 0, tmp - 1);
     new_val.data[i] = left + right;
     right = new_val.data[i] >> (64 - tmp);
-    // right = set_zeros(right, tmp, 63);
   }
   return new_val;
 }
