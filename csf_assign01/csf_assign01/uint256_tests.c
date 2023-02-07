@@ -33,15 +33,30 @@ void test_create_from_u64(TestObjs *objs);
 void test_create(TestObjs *objs);
 void test_create_from_hex(TestObjs *objs);
 void test_format_as_hex(TestObjs *objs);
+
 void test_add_1(TestObjs *objs);
 void test_add_2(TestObjs *objs);
 void test_add_3(TestObjs *objs);
+void test_add_4(TestObjs *objs);
+void test_add_5(TestObjs *objs);
+void test_add_6(TestObjs *objs);
+void test_add_7(TestObjs *objs);
+
 void test_sub_1(TestObjs *objs);
 void test_sub_2(TestObjs *objs);
 void test_sub_3(TestObjs *objs);
+void test_sub_4(TestObjs *objs);
+void test_sub_5(TestObjs *objs);
+void test_sub_6(TestObjs *objs);
+void test_sub_7(TestObjs *objs);
+
 void test_mul_1(TestObjs *objs);
 void test_mul_1_b(TestObjs *objs);
 void test_mul_2(TestObjs *objs);
+void test_mul_3(TestObjs *objs);
+void test_mul_4(TestObjs *objs);
+void test_mul_5(TestObjs *objs);
+
 void test_create_from_hex_2(TestObjs *objs);
 void test_format_as_hex_2(TestObjs *objs);
 
@@ -60,12 +75,22 @@ int main(int argc, char **argv) {
   TEST(test_add_1);
   TEST(test_add_2);
   TEST(test_add_3);
+  TEST(test_add_4);
+  TEST(test_add_5);
+  TEST(test_add_6);
+  TEST(test_add_7);
   TEST(test_sub_1);
   TEST(test_sub_2);
   TEST(test_sub_3);
+  TEST(test_sub_5);
+  TEST(test_sub_6);
+  TEST(test_sub_7);
   TEST(test_mul_1);
   TEST(test_mul_1_b);
   TEST(test_mul_2);
+  TEST(test_mul_3);
+  TEST(test_mul_4);
+  TEST(test_mul_5);
   TEST(test_create_from_hex_2);
   TEST(test_format_as_hex_2);
 
@@ -285,6 +310,95 @@ void test_add_3(TestObjs *objs) {
   ASSERT(0xac5151273cfcf2eUL == result.data[3]);
 }
 
+void test_add_4(TestObjs *objs) {
+  // "medium" addition tests
+
+  (void) objs;
+
+  UInt256 left, right, result;
+
+  left.data[0] = 0x1UL;
+  left.data[1] = 0x1UL;
+  left.data[2] = 0x0UL;
+  left.data[3] = 0x0UL;
+  right.data[0] = 0x0UL;
+  right.data[1] = 0x0UL;
+  right.data[2] = 0x1UL;
+  right.data[3] = 0x1UL;
+  result = uint256_add(left, right);
+  ASSERT(0x1UL == result.data[0]);
+  ASSERT(0x1UL == result.data[1]);
+  ASSERT(0x1UL == result.data[2]);
+  ASSERT(0x1UL == result.data[3]);
+}
+
+void test_add_5(TestObjs *objs) {
+
+  (void) objs;
+
+  UInt256 left, right, result;
+
+  left.data[0] = 0x0UL;
+  left.data[1] = 0x1UL;
+  left.data[2] = 0x0UL;
+  left.data[3] = 0x0UL;
+  right.data[0] = 0x0UL;
+  right.data[1] = 0x1UL;
+  right.data[2] = 0x0UL;
+  right.data[3] = 0x0UL;
+  result = uint256_add(left, right);
+  ASSERT(0x0UL == result.data[0]);
+  ASSERT(0x2UL == result.data[1]);
+  ASSERT(0x0UL == result.data[2]);
+  ASSERT(0x0UL == result.data[3]);
+}
+
+void test_add_6(TestObjs *objs) {
+  // add 0 to itself
+
+  (void) objs;
+
+  UInt256 left, right, result;
+
+  // aea324a080e90be854db42831a77d86586037eb49b2ffec6f85ddeb2e211aad + 0 = aea324a080e90be854db42831a77d86586037eb49b2ffec6f85ddeb2e211aad
+  left.data[0] = 0x6f85ddeb2e211aadUL;
+  left.data[1] = 0x586037eb49b2ffecUL;
+  left.data[2] = 0x854db42831a77d86UL;
+  left.data[3] = 0xaea324a080e90beUL;
+  right.data[0] = 0x0UL;
+  right.data[1] = 0x0UL;
+  right.data[2] = 0x0UL;
+  right.data[3] = 0x0UL;
+  result = uint256_add(left, right);
+  ASSERT(0x6f85ddeb2e211aadUL == result.data[0]);
+  ASSERT(0x586037eb49b2ffecUL == result.data[1]);
+  ASSERT(0x854db42831a77d86UL == result.data[2]);
+  ASSERT(0xaea324a080e90beUL == result.data[3]);
+}
+
+void test_add_7(TestObjs *objs) {
+  // "large" addition tests
+
+  (void) objs;
+
+  UInt256 left, right, result;
+
+  // 7672bbcca9e2d3bd7dee73cd01f5a43a5256c2ceef3e9f269c76e37ce7a49f2 + de4d151e8e7e1c6a1396342e62c59d505ad9fd495369af22e0711ab769813b1 = 154bfd0eb3860f0279184a7fb64bb418aad30c01842a84e497ce7fe345125da3
+  left.data[0] = 0x69c76e37ce7a49f2UL;
+  left.data[1] = 0xa5256c2ceef3e9f2UL;
+  left.data[2] = 0xd7dee73cd01f5a43UL;
+  left.data[3] = 0x7672bbcca9e2d3bUL;
+  right.data[0] = 0x2e0711ab769813b1UL;
+  right.data[1] = 0x05ad9fd495369af2UL;
+  right.data[2] = 0xa1396342e62c59d5UL;
+  right.data[3] = 0xde4d151e8e7e1c6UL;
+  result = uint256_add(left, right);
+  ASSERT(0x97ce7fe345125da3UL == result.data[0]);
+  ASSERT(0xaad30c01842a84e4UL == result.data[1]);
+  ASSERT(0x79184a7fb64bb418UL == result.data[2]);
+  ASSERT(0x154bfd0eb3860f02UL == result.data[3]);
+}
+
 void test_sub_1(TestObjs *objs) {
   // basic subtraction tests
 
@@ -343,6 +457,93 @@ void test_sub_3(TestObjs *objs) {
   ASSERT(0x4a4b72ebb654226UL == result.data[3]);
 }
 
+void test_sub_4(TestObjs *objs) {
+  // "large" subtraction tests
+
+  (void) objs;
+
+  UInt256 left, right, result;
+
+  // eab100a3d1e89e6af075918ecb4890cd96f519599ae380b40025e67fbe5e3c3 - 8b52aeec3c8e18dbbb5f0074d11f16e137865b1571c45df78f9d9c4e6bf0d00 = 5f5e51b7955a858f35169119fa2979ec5f6ebe44291f22bc70884a31526d6c3
+  left.data[0] = 0x40025e67fbe5e3c3UL;
+  left.data[1] = 0xd96f519599ae380bUL;
+  left.data[2] = 0xaf075918ecb4890cUL;
+  left.data[3] = 0xeab100a3d1e89e6UL;
+  right.data[0] = 0x78f9d9c4e6bf0d00UL;
+  right.data[1] = 0x137865b1571c45dfUL;
+  right.data[2] = 0xbbb5f0074d11f16eUL;
+  right.data[3] = 0x8b52aeec3c8e18dUL;
+  result = uint256_sub(left, right);
+  ASSERT(0xc70884a31526d6c3UL == result.data[0]);
+  ASSERT(0xc5f6ebe44291f22bUL == result.data[1]);
+  ASSERT(0xf35169119fa2979eUL == result.data[2]);
+  ASSERT(0x5f5e51b7955a858UL == result.data[3]);
+}
+
+void test_sub_5(TestObjs *objs) {
+
+  (void) objs;
+
+  UInt256 left, right, result;
+  left.data[0] = 0x1UL;
+  left.data[1] = 0x1UL;
+  left.data[2] = 0x1UL;
+  left.data[3] = 0x1UL;
+  right.data[0] = 0x1UL;
+  right.data[1] = 0x1UL;
+  right.data[2] = 0x0UL;
+  right.data[3] = 0x0UL;
+  result = uint256_sub(left, right);
+  ASSERT(0x0UL == result.data[0]);
+  ASSERT(0x0UL == result.data[1]);
+  ASSERT(0x1UL == result.data[2]);
+  ASSERT(0x1UL == result.data[3]);
+}
+
+void test_sub_6(TestObjs *objs) {
+  // subtract from itself
+
+  (void) objs;
+
+  UInt256 left, right, result;
+
+  left.data[0] = 0xd0bdb42962a6ae8cUL;
+  left.data[1] = 0x5034f5d413945ac7UL;
+  left.data[2] = 0xcc07a1509f4ebb33UL;
+  left.data[3] = 0xbc556287a225313UL;
+  right.data[0] = 0xd0bdb42962a6ae8cUL;
+  right.data[1] = 0x5034f5d413945ac7UL;
+  right.data[2] = 0xcc07a1509f4ebb33UL;
+  right.data[3] = 0xbc556287a225313UL;
+  result = uint256_sub(left, right);
+  ASSERT(0x0UL == result.data[0]);
+  ASSERT(0x0UL == result.data[1]);
+  ASSERT(0x0UL == result.data[2]);
+  ASSERT(0x0UL == result.data[3]);
+}
+
+void test_sub_7(TestObjs *objs) {
+
+  (void) objs;
+
+  UInt256 left, right, result;
+
+  // subtracting 0 
+  left.data[0] = 0xa18c90UL;
+  left.data[1] = 0x0UL;
+  left.data[2] = 0x0UL;
+  left.data[3] = 0x0UL;
+  right.data[0] = 0x0UL;
+  right.data[1] = 0x0UL;
+  right.data[2] = 0x0UL;
+  right.data[3] = 0x0UL;
+  result = uint256_sub(left, right);
+  ASSERT(0xa18c90UL == result.data[0]);
+  ASSERT(0x0UL == result.data[1]);
+  ASSERT(0x0UL == result.data[2]);
+  ASSERT(0x0UL == result.data[3]);
+}
+
 void test_mul_1(TestObjs *objs) {
   // basic multiplication tests
 
@@ -358,18 +559,18 @@ void test_mul_1(TestObjs *objs) {
 void test_mul_1_b(TestObjs *objs) {
   (void) objs;
   UInt256 left, right, result;
-  // 761544a98b82abc63f23766d1391782 * 14bf658bd8053a9484c32d955a47a2f = 991f2125eacd361abad710163aa9be6117fa57cddf52e73c97a28d7f744de
+  // 18446744073709551615 * 1 = 18446744073709551615
   left.data[0] = 0xFFFFFFFFFFFFFFFFUL;
   left.data[1] = 0x0UL;
   left.data[2] = 0x0UL;
   left.data[3] = 0x0UL;
-  right.data[0] = 0x2UL;
+  right.data[0] = 0x1UL;
   right.data[1] = 0x0UL;
   right.data[2] = 0x0UL;
   right.data[3] = 0x0UL;
   result = uint256_mul(left, right);
-  ASSERT(0x0UL== result.data[0]);
-  ASSERT(0x1UL == result.data[1]);
+  ASSERT(0xFFFFFFFFFFFFFFFFUL == result.data[0]);
+  ASSERT(0x0UL == result.data[1]);
   ASSERT(0x0UL == result.data[2]);
   ASSERT(0x0UL == result.data[3]);
 }
@@ -393,4 +594,65 @@ void test_mul_2(TestObjs *objs) {
   ASSERT(0xe6117fa57cddf52eUL == result.data[1]);
   ASSERT(0x61abad710163aa9bUL == result.data[2]);
   ASSERT(0x991f2125eacd3UL == result.data[3]);
+}
+
+void test_mul_3(TestObjs *objs) {
+  (void) objs;
+
+  UInt256 left, right, result;
+
+  // a69e9f226f6a45739bf2d9c96e6d7de * cfd7c6d21e88e3efab9628fe6cb74dd = 8746b34bef155c199e4f28f7db372589c9a7a33e0c46acca77f48f8022f2a6
+  left.data[0] = 0x39bf2d9c96e6d7deUL;
+  left.data[1] = 0xa69e9f226f6a457UL;
+  left.data[2] = 0x0UL;
+  left.data[3] = 0x0UL;
+  right.data[0] = 0xfab9628fe6cb74ddUL;
+  right.data[1] = 0xcfd7c6d21e88e3eUL;
+  right.data[2] = 0x0UL;
+  right.data[3] = 0x0UL;
+  result = uint256_mul(left, right);
+  ASSERT(0xca77f48f8022f2a6UL == result.data[0]);
+  ASSERT(0x89c9a7a33e0c46acUL == result.data[1]);
+  ASSERT(0x199e4f28f7db3725UL == result.data[2]);
+  ASSERT(0x8746b34bef155cUL == result.data[3]);
+}
+
+void test_mul_4(TestObjs *objs) {
+  (void) objs;
+
+  UInt256 left, right, result;
+
+  left.data[0] = 0x0UL;
+  left.data[1] = 0x1UL;
+  left.data[2] = 0x0UL;
+  left.data[3] = 0x0UL;
+  right.data[0] = 0x2UL;
+  right.data[1] = 0x0UL;
+  right.data[2] = 0x0UL;
+  right.data[3] = 0x0UL;
+  result = uint256_mul(left, right);
+  ASSERT(0x0UL == result.data[0]);
+  ASSERT(0x2UL == result.data[1]);
+  ASSERT(0x0UL == result.data[2]);
+  ASSERT(0x0UL == result.data[3]);
+}
+
+void test_mul_5(TestObjs *objs) {
+  (void) objs;
+
+  UInt256 left, right, result;
+
+  left.data[0] = 0x0UL;
+  left.data[1] = 0x0UL;
+  left.data[2] = 0x0UL;
+  left.data[3] = 0x1UL;
+  right.data[0] = 0x1UL;
+  right.data[1] = 0x0UL;
+  right.data[2] = 0x0UL;
+  right.data[3] = 0x0UL;
+  result = uint256_mul(left, right);
+  ASSERT(0x0UL == result.data[0]);
+  ASSERT(0x0UL == result.data[1]);
+  ASSERT(0x0UL == result.data[2]);
+  ASSERT(0x1UL == result.data[3]);
 }
