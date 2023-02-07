@@ -8,10 +8,16 @@ typedef struct {
   UInt256 zero;
   UInt256 one;
   UInt256 large1;
+  UInt256 large2;
+  UInt256 large3;
+  UInt256 large4;
 
   const char *hex1;
   const char *hex2;
   const char *hex3;
+  const char *hex4;
+  const char *hex5;
+  const char *hex6;
 } TestObjs;
 
 // Functions to create and cleanup the test fixture object
@@ -35,6 +41,8 @@ void test_sub_2(TestObjs *objs);
 void test_sub_3(TestObjs *objs);
 void test_mul_1(TestObjs *objs);
 void test_mul_2(TestObjs *objs);
+void test_create_from_hex_2(TestObjs *objs);
+void test_format_as_hex_2(TestObjs *objs);
 
 int main(int argc, char **argv) {
   if (argc > 1) {
@@ -56,6 +64,8 @@ int main(int argc, char **argv) {
   TEST(test_sub_3);
   TEST(test_mul_1);
   TEST(test_mul_2);
+  TEST(test_create_from_hex_2);
+  TEST(test_format_as_hex_2);
 
   TEST_FINI();
 }
@@ -80,11 +90,29 @@ TestObjs *setup(void) {
   objs->large1.data[1] = 0xCC;
   objs->large1.data[0] = 0xDD;
 
+  objs->large2.data[3] = 0xFFF;
+  objs->large2.data[2] = 0x123FFF;
+  objs->large2.data[1] = 0x123FFF;
+  objs->large2.data[0] = 0x123FFF;
+
+  objs->large3.data[3] = 0x123FFF;
+  objs->large3.data[2] = 0x123FFF;
+  objs->large3.data[1] = 0x1111111111123fff;
+  objs->large3.data[0] = 0x123FFF;
+
+  objs->large4.data[3] = 0xf4a4b72ebb654226;
+  objs->large4.data[2] = 0xef77ed83d884f494;
+  objs->large4.data[1] = 0x0e4243bc3913ceaf;
+  objs->large4.data[0] = 0x5781b28d25fb00b0;
+
   // example hex strings
 
   objs->hex1 = "0";
   objs->hex2 = "cafe";
   objs->hex3 = "4a4b72ebb654226ef77ed83d884f4940e4243bc3913ceaf5781b28d25fb00b0";
+  objs->hex4 = "1";
+  objs->hex5 = "1000000000000000000000000000000000000000000000000000000000000000";
+  objs->hex6 = "f4a4b72ebb654226ef77ed83d884f4940e4243bc3913ceaf5781b28d25fb00b0";
 
   return objs;
 }
@@ -146,9 +174,22 @@ void test_create_from_hex(TestObjs *objs) {
   val = uint256_create_from_hex(objs->hex2);
   ASSERT(check(val, 0x0UL, 0x0UL, 0x0UL, 0xcafeUL));
 
+}
+
+void test_create_from_hex_2(TestObjs *objs) {
+  UInt256 val;
+
   val = uint256_create_from_hex(objs->hex3);
   ASSERT(check(val, 0x4a4b72ebb654226UL, 0xef77ed83d884f494UL, 0x0e4243bc3913ceafUL, 0x5781b28d25fb00b0UL));
 
+  val = uint256_create_from_hex(objs->hex4);
+  ASSERT(check(val, 0x0UL, 0x0UL, 0x0UL, 0x1UL));
+
+  val = uint256_create_from_hex(objs->hex5);
+  ASSERT(check(val, 0x1000000000000000UL, 0x0UL, 0x0UL, 0x0UL));
+
+  val = uint256_create_from_hex(objs->hex6);
+  ASSERT(check(val, 0xf4a4b72ebb654226UL, 0xef77ed83d884f494UL, 0x0e4243bc3913ceafUL, 0x5781b28d25fb00b0UL));
 }
 
 void test_format_as_hex(TestObjs *objs) {
@@ -161,26 +202,26 @@ void test_format_as_hex(TestObjs *objs) {
   s = uint256_format_as_hex(objs->one);
   ASSERT(0 == strcmp("1", s));
   free(s);
+}
 
-  // s = uint256_format_as_hex(objs->large1);
-  // ASSERT(0 == strcmp("aabbccdd", s));
-  // free(s);
+void test_format_as_hex_2(TestObjs *objs) {
+  char *s;
 
-  UInt256 val;
-  val = uint256_create_from_hex(objs->hex1);
-  ASSERT(check(val, 0x0UL, 0x0UL, 0x0UL, 0x0UL));
+  s = uint256_format_as_hex(objs->large1);
+  ASSERT(0 == strcmp("aa00000000000000bb00000000000000cc00000000000000dd", s));
+  free(s);
 
-  // s = uint256_format_as_hex(objs->hex2);
-  // ASSERT(0 == strcmp("cafe", s));
-  // free(s);
+  s = uint256_format_as_hex(objs->large2);
+  ASSERT(0 == strcmp("fff0000000000123fff0000000000123fff0000000000123fff", s));
+  free(s);
 
-  // s = uint256_format_as_hex(objs->hex3);
-  // ASSERT(0 == strcmp("4a4b72ebb654226ef77ed83d884f4940e4243bc3913ceaf5781b28d25fb00b0", s));
-  // free(s);
+  s = uint256_format_as_hex(objs->large3);
+  ASSERT(0 == strcmp("123fff0000000000123fff1111111111123fff0000000000123fff", s));
+  free(s);
 
-  // s = uint256_format_as_hex(objs->one);
-  // ASSERT(0 == strcmp("1", s));
-  // free(s);
+  s = uint256_format_as_hex(objs->large4);
+  ASSERT(0 == strcmp("f4a4b72ebb654226ef77ed83d884f4940e4243bc3913ceaf5781b28d25fb00b0", s));
+  free(s);
 }
 
 void test_add_1(TestObjs *objs) {
