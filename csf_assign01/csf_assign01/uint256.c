@@ -1,3 +1,10 @@
+/*
+ * Function implementing a simple C library implementation operations on a 256-bit unsigned integer data type
+ * CSF Assignment 1 Milestone 2
+ * D. Zheng   H. Qu
+ * dzheng12@jhu.edu   hqu6@jhu.edu
+ */
+
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
