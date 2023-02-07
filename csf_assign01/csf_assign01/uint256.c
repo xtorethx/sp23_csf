@@ -5,6 +5,7 @@
 #include "uint256.h"
 #include <stdbool.h>
 
+
 // Create a UInt256 value from a single uint64_t value.
 // Only the least-significant 64 bits are initialized directly,
 // all other bits are set to 0.
@@ -17,6 +18,7 @@ UInt256 uint256_create_from_u64(uint64_t val) {
   return result;
 }
 
+
 // Create a UInt256 value from an array of 4 uint64_t values.
 // The element at index 0 is the least significant, and the element
 // at index 3 is the most significant.
@@ -28,6 +30,7 @@ UInt256 uint256_create(const uint64_t data[4]) {
   result.data[3] = data[3];
   return result;
 }
+
 
 // Create a UInt256 value from a string of hexadecimal digits.
 UInt256 uint256_create_from_hex(const char *hex) {
@@ -46,13 +49,14 @@ UInt256 uint256_create_from_hex(const char *hex) {
       }
       //std::cout << hexcopy << std::endl;  
   }
-  
+ 
   else if (len > 64) {
       for (int i = (len - 64); i < (int) len; i++) {
           hexcopy[i-(len-64)] = *(hex+i);
       }
-      //std::cout << hexcopy << std::endl; 
+      //std::cout << hexcopy << std::endl;
   }
+
 
   else {
     for (int i = 0; i < 64; i++) {
@@ -60,8 +64,9 @@ UInt256 uint256_create_from_hex(const char *hex) {
     }
   }
 
+
   int arrind = 3;
-  
+ 
   for (int i = 0; i < 64; i = i + 16) {
     char substr[17] = {0};
     substr[16] = '\0';
@@ -79,6 +84,7 @@ UInt256 uint256_create_from_hex(const char *hex) {
   return result;
 }
 
+
 int leadingzeroindex(char *hex) {
   int leadingzeroind = -1;
   int i = 0;
@@ -94,6 +100,7 @@ int leadingzeroindex(char *hex) {
   }
   return i;
 }
+
 
 // Return a dynamically-allocated string of hex digits representing the
 // given UInt256 value.
@@ -124,6 +131,7 @@ char *uint256_format_as_hex(UInt256 val) {
   return trunc;
 }
 
+
 // Get 64 bits of data from a UInt256 value.
 // Index 0 is the least significant 64 bits, index 3 is the most
 // significant 64 bits.
@@ -132,6 +140,7 @@ uint64_t uint256_get_bits(UInt256 val, unsigned index) {
   bits = val.data[index];
   return bits;
 }
+
 
 //check if adding 2 uint64_t values results in overflow
 int check_overflow(uint64_t top, uint64_t bot, uint64_t carry) {
@@ -148,12 +157,14 @@ int check_overflow(uint64_t top, uint64_t bot, uint64_t carry) {
   }
 }
 
+
 // Compute the sum of two UInt256 values.
 UInt256 uint256_add(UInt256 left, UInt256 right) {
   UInt256 sum;
   uint64_t carry = 0UL;
   for (int i = 0; i < 4; i++) {
     sum.data[i] = left.data[i] + right.data[i] + carry;
+
 
     if (check_overflow(left.data[i], right.data[i], carry)) {
       carry = 1UL;
@@ -162,26 +173,33 @@ UInt256 uint256_add(UInt256 left, UInt256 right) {
     }
   }
 
+
   return sum;
 }
+
 
 // invert the bits of a Uint256 value and add 1 to negate
 UInt256 negate(UInt256 num) {
   UInt256 negated;
 
 
+
+
   for (int i = 0; i < 4; i++) {
     negated.data[i] = ~num.data[i];
   }
-  
+ 
+
 
   negated = uint256_add(negated, uint256_create_from_u64(1UL));
+
 
   return negated;
 }
 // Compute the difference of two UInt256 values.
 UInt256 uint256_sub(UInt256 left, UInt256 right) {
   UInt256 result;
+
 
   result = uint256_add(left, negate(right));
   // printf("%lu\n", result.data[0]);
@@ -191,16 +209,20 @@ UInt256 uint256_sub(UInt256 left, UInt256 right) {
   return result;
 }
 
+
 UInt256 shift_n_chunks (UInt256 num, int n) {
   UInt256 new;
   new = uint256_create_from_u64(0UL);
+
 
   for (int i = n; i < 4; i++) {
     new.data[i] = num.data[i - n];
   }
 
+
   return new;
 }
+
 
 bool uint256_bit_is_set(UInt256 val, unsigned index) {
   int num_chunks = 0;
@@ -210,8 +232,21 @@ bool uint256_bit_is_set(UInt256 val, unsigned index) {
     tmp = tmp - 64;
   }
 
-  return (val.data[num_chunks] & (1UL << tmp)) != 0;
+
+  return (val.data[num_chunks] & (1UL << tmp));
 }
+
+
+// uint64_t set_zeros(uint64_t val, unsigned start, unsigned end) {
+//   uint64_t new = val;
+//   for (unsigned i = start; i < end + 1; i++) {
+//     new &= ~(1 << i);
+//   }
+
+
+//   return new;
+// }
+
 
 UInt256 uint256_leftshift(UInt256 val, unsigned shift) {
   UInt256 new_val;
@@ -220,39 +255,53 @@ UInt256 uint256_leftshift(UInt256 val, unsigned shift) {
   uint64_t left = 0UL;
   uint64_t right = 0UL;
 
+
   new_val = shift_n_chunks(val, num_chunks);
+
 
   if (tmp == 0) {
     return new_val;
   }
-  
+ 
   right = new_val.data[num_chunks] >> (64 - tmp);
-  new_val.data[num_chunks] = new_val.data[num_chunks] << tmp;
-
+  // right = set_zeros(right, tmp, 63);
+  left = new_val.data[num_chunks] << tmp;
+  // left = set_zeros(left, 0, tmp - 1);
+  new_val.data[num_chunks] = left;
   for (int i = num_chunks + 1; i < 4; i++) {
     left = new_val.data[i] << tmp;
+    // left = set_zeros(left, 0, tmp - 1);
     new_val.data[i] = left + right;
     right = new_val.data[i] >> (64 - tmp);
+    // right = set_zeros(right, tmp, 63);
   }
+
 
   return new_val;
 }
+
 
 // Compute the product of two UInt256 values.
 UInt256 uint256_mul(UInt256 left, UInt256 right) {
   UInt256 product;
   product = uint256_create_from_u64(0UL);
 
+
   for (int i = 0; i < 256; i++) {
     if (uint256_bit_is_set(left, i)) {
       product = uint256_add(product, uint256_leftshift(right, i));
     }
+   
   }
 
-  printf("%lu\n", product.data[0]);
-  printf("%lu\n", product.data[1]);
-  printf("%lu\n", product.data[2]);
-  printf("%lu\n", product.data[3]);
+
+  // printf("%lu\n", product.data[0]);
+  // printf("%lu\n", product.data[1]);
+  // printf("%lu\n", product.data[2]);
+  // printf("%lu\n", product.data[3]);
+
 
   return product;
 }
+
+

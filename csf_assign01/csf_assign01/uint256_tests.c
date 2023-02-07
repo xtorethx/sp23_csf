@@ -40,6 +40,7 @@ void test_sub_1(TestObjs *objs);
 void test_sub_2(TestObjs *objs);
 void test_sub_3(TestObjs *objs);
 void test_mul_1(TestObjs *objs);
+void test_mul_1_b(TestObjs *objs);
 void test_mul_2(TestObjs *objs);
 void test_create_from_hex_2(TestObjs *objs);
 void test_format_as_hex_2(TestObjs *objs);
@@ -63,6 +64,7 @@ int main(int argc, char **argv) {
   TEST(test_sub_2);
   TEST(test_sub_3);
   TEST(test_mul_1);
+  TEST(test_mul_1_b);
   TEST(test_mul_2);
   TEST(test_create_from_hex_2);
   TEST(test_format_as_hex_2);
@@ -351,6 +353,25 @@ void test_mul_1(TestObjs *objs) {
 
   result = uint256_mul(objs->one, objs->zero);
   ASSERT(check(result, 0UL, 0UL, 0UL, 0UL));
+}
+
+void test_mul_1_b(TestObjs *objs) {
+  (void) objs;
+  UInt256 left, right, result;
+  // 761544a98b82abc63f23766d1391782 * 14bf658bd8053a9484c32d955a47a2f = 991f2125eacd361abad710163aa9be6117fa57cddf52e73c97a28d7f744de
+  left.data[0] = 0xFFFFFFFFFFFFFFFFUL;
+  left.data[1] = 0x0UL;
+  left.data[2] = 0x0UL;
+  left.data[3] = 0x0UL;
+  right.data[0] = 0x2UL;
+  right.data[1] = 0x0UL;
+  right.data[2] = 0x0UL;
+  right.data[3] = 0x0UL;
+  result = uint256_mul(left, right);
+  ASSERT(0x0UL== result.data[0]);
+  ASSERT(0x1UL == result.data[1]);
+  ASSERT(0x0UL == result.data[2]);
+  ASSERT(0x0UL == result.data[3]);
 }
 
 void test_mul_2(TestObjs *objs) {
