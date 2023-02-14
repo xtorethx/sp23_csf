@@ -2,8 +2,6 @@
 
 #include <unistd.h>  // this is the only system header file you may include!
 #include "hexfuncs.h"
-#include <stdio.h>
-#include <string.h>
 
 // TODO:s add function implementations here
 // Read up to 16 bytes from standard input into data_buf.
@@ -21,7 +19,10 @@ unsigned hex_read(char data_buf[]){
 
 // Write given nul-terminated string to standard output.
 void hex_write_string(const char s[]){
-
+    while(*s != 0) {
+        write(1, s, sizeof(*s));
+        s++;
+    }
 }
 
 // Format an unsigned value as an offset string consisting of exactly 8
