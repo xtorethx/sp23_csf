@@ -2,21 +2,20 @@
 
 #include <unistd.h>  // this is the only system header file you may include!
 #include "hexfuncs.h"
+#include <stdio.h>
+#include <string.h>
 
 // TODO:s add function implementations here
 // Read up to 16 bytes from standard input into data_buf.
 // Returns the number of characters read.
 unsigned hex_read(char data_buf[]){
-    unsigned ret;
-    ret = 0
-
-    int i = 0;
-    ret = 0;
-	
-	while(data_buf[i++]!='\0'){
-		ret++;
-	}
-	
+    unsigned ret = 0;
+    unsigned tmp = 1;
+    
+    while (tmp > 0) {
+        tmp = read(0, data_buf, 16);
+        ret = ret + tmp;
+    }
     return ret;
 }
 
@@ -29,7 +28,31 @@ void hex_write_string(const char s[]){
 // hex digits.  The formatted offset is stored in sbuf, which must
 // have enough room for a string of length 8.
 void hex_format_offset(unsigned offset, char sbuf[]){
+    
+    unsigned rm;
+    
+    for (int i = 0; i < 8; i++) {
+        rm = offset % 16;
+        if (rm < 10) {
+            rm = rm + 48;
+        } else {
+            rm = rm + 87;
+        }
 
+        sbuf[i] = rm;
+        offset = offset / 16;
+    }
+    
+    char temp;
+        for (int i = 0; i < 4; i++)  
+    {  
+        // temp variable use to temporary hold the string  
+        temp = sbuf[i];  
+        sbuf[i] = sbuf[8 - i - 1];  
+        sbuf[8 - i - 1] = temp;  
+    } 
+    
+    sbuf[8] = '\0';
 }
 
 char int_to_hexchar(int dec) {
