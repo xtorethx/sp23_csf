@@ -26,7 +26,20 @@ void cleanup(TestObjs *objs) {
 
 // Prototypes for test functions
 void testFormatOffset(TestObjs *objs);
-void testFormatByteAsHex(TestObjs *objs);
+// void testFormatByteAsHex(TestObjs *objs);
+// void testFormatByteAsHex1(TestObjs *objs);
+// void testFormatByteAsHex2(TestObjs *objs);
+// void testFormatByteAsHex3(TestObjs *objs);
+// void testFormatByteAsHex4(TestObjs *objs);
+// void testFormatByteAsHex5(TestObjs *objs);
+void testFormatByteAsHex6(TestObjs *objs);
+// void testFormatByteAsHex7(TestObjs *objs);
+// void testFormatByteAsHex8(TestObjs *objs);
+// void testFormatByteAsHex9(TestObjs *objs);
+// void testFormatByteAsHex10(TestObjs *objs);
+// void testFormatByteAsHex11(TestObjs *objs);
+// void testFormatByteAsHex12(TestObjs *objs);
+void testFormatByteAsHex13(TestObjs *objs);
 void testHexToPrintable(TestObjs *objs);
 
 int main(int argc, char **argv) {
@@ -37,7 +50,20 @@ int main(int argc, char **argv) {
   TEST_INIT();
 
   TEST(testFormatOffset);
-  TEST(testFormatByteAsHex);
+  // TEST(testFormatByteAsHex);
+  // TEST(testFormatByteAsHex1);
+  // TEST(testFormatByteAsHex2);
+  // TEST(testFormatByteAsHex3);
+  // TEST(testFormatByteAsHex4);
+  // TEST(testFormatByteAsHex5);
+  TEST(testFormatByteAsHex6);
+  // TEST(testFormatByteAsHex7);
+  // TEST(testFormatByteAsHex8);
+  // TEST(testFormatByteAsHex9);
+  // TEST(testFormatByteAsHex10);
+  // TEST(testFormatByteAsHex11);
+  // TEST(testFormatByteAsHex12);
+  TEST(testFormatByteAsHex13);
   TEST(testHexToPrintable);
 
   TEST_FINI();
@@ -55,10 +81,102 @@ void testFormatOffset(TestObjs *objs) {
   ASSERT(0 == strcmp(buf, "abcd1234"));
 }
 
-void testFormatByteAsHex(TestObjs *objs) {
+// //'H'
+// void testFormatByteAsHex(TestObjs *objs) {
+//   char buf[16];
+//   hex_format_byte_as_hex(objs->test_data_1[0], buf);
+//   ASSERT(0 == strcmp(buf, "48"));
+// }
+
+// //'e'
+// void testFormatByteAsHex1(TestObjs *objs) {
+//   char buf[16];
+//   hex_format_byte_as_hex(objs->test_data_1[1], buf);
+//   ASSERT(0 == strcmp(buf, "65"));
+// }
+
+// //'l'
+// void testFormatByteAsHex2(TestObjs *objs) {
+//   char buf[16];
+//   hex_format_byte_as_hex(objs->test_data_1[2], buf);
+//   ASSERT(0 == strcmp(buf, "6c"));
+// }
+
+// //'l'
+// void testFormatByteAsHex3(TestObjs *objs) {
+//   char buf[16];
+//   hex_format_byte_as_hex(objs->test_data_1[3], buf);
+//   ASSERT(0 == strcmp(buf, "6c"));
+// }
+
+// //'o'
+// void testFormatByteAsHex4(TestObjs *objs) {
+//   char buf[16];
+//   hex_format_byte_as_hex(objs->test_data_1[4], buf);
+//   ASSERT(0 == strcmp(buf, "6f"));
+// }
+
+// //','
+// void testFormatByteAsHex5(TestObjs *objs) {
+//   char buf[16];
+//   hex_format_byte_as_hex(objs->test_data_1[5], buf);
+//   ASSERT(0 == strcmp(buf, "2c"));
+// }
+
+//' '
+void testFormatByteAsHex6(TestObjs *objs) {
   char buf[16];
-  hex_format_byte_as_hex(objs->test_data_1[0], buf);
-  ASSERT(0 == strcmp(buf, "48"));
+  hex_format_byte_as_hex(objs->test_data_1[6], buf);
+  ASSERT(0 == strcmp(buf, "20"));
+}
+
+// //'w'
+// void testFormatByteAsHex7(TestObjs *objs) {
+//   char buf[16];
+//   hex_format_byte_as_hex(objs->test_data_1[7], buf);
+//   ASSERT(0 == strcmp(buf, "77"));
+// }
+
+// //'o'
+// void testFormatByteAsHex8(TestObjs *objs) {
+//   char buf[16];
+//   hex_format_byte_as_hex(objs->test_data_1[8], buf);
+//   ASSERT(0 == strcmp(buf, "6f"));
+// }
+
+// //'r'
+// void testFormatByteAsHex9(TestObjs *objs) {
+//   char buf[16];
+//   hex_format_byte_as_hex(objs->test_data_1[9], buf);
+//   ASSERT(0 == strcmp(buf, "72"));
+// }
+
+// //'l'
+// void testFormatByteAsHex10(TestObjs *objs) {
+//   char buf[16];
+//   hex_format_byte_as_hex(objs->test_data_1[10], buf);
+//   ASSERT(0 == strcmp(buf, "6c"));
+// }
+
+// //'d'
+// void testFormatByteAsHex11(TestObjs *objs) {
+//   char buf[16];
+//   hex_format_byte_as_hex(objs->test_data_1[11], buf);
+//   ASSERT(0 == strcmp(buf, "64"));
+// }
+
+// //'!'
+// void testFormatByteAsHex12(TestObjs *objs) {
+//   char buf[16];
+//   hex_format_byte_as_hex(objs->test_data_1[12], buf);
+//   ASSERT(0 == strcmp(buf, "21"));
+// }
+
+//'\n'
+void testFormatByteAsHex13(TestObjs *objs) {
+  char buf[16];
+  hex_format_byte_as_hex(objs->test_data_1[13], buf);
+  ASSERT(0 == strcmp(buf, "0a"));
 }
 
 void testHexToPrintable(TestObjs *objs) {

@@ -57,6 +57,9 @@ void hex_format_offset(unsigned offset, char sbuf[]){
 }
 
 char int_to_hexchar(int dec) {
+    if(dec == 0){
+        return '0';
+    }
     char cov[16] = {'1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
     cov[15] = '\0';
     return cov[dec-1];
@@ -74,6 +77,7 @@ void hex_format_byte_as_hex(unsigned char byteval, char sbuf[]){
 
     sbuf[0] = div;
     sbuf[1] = mod;
+    sbuf[2] = 0;
     
     //printf("%s", sbuf);
 }

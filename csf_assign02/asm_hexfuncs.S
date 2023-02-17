@@ -42,8 +42,8 @@ hex_string:
 		movzx %ah, %edx // edx = 8
 		movzx %al, %eax // eax = 4
 		
-		movl %eax, 0(%rsi)
-		movl %edx, 4(%rsi)
+		movb %al, 0(%rsi)
+		movb %ah, 1(%rsi)
 		
 		ret
 		
