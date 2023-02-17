@@ -1,6 +1,7 @@
 /* Assembly language implementation of hexdump functions */
 
 	.section .rodata
+hex_string:
 
 	/* TODO: add read-only data such as strings here */
 
@@ -26,14 +27,25 @@
 		
 
 	hex_format_byte_as_hex: 
-		ret
-		//push % ebp
-		//movl %esp, %ebp
+		// unsigned char byteval as %rdi (%edi), char string sbuf as %rsi (%rsi)
 
-		//subl $4, %esp //make room for dec
-		//movzx 8(%ebp), %esp //move int casted byteval into dec
-		//subl $4, %esp //make room for div
-		//sub1 $4, %esp //make room for mod
+		//edi 0x48 72
+		//rsi empty string
+
+		movq $0, %rax
+		movq $0, %rdx
+		
+		movw %di, %ax
+		movb $16, %cl
+		divb %cl 
+
+		movzx %ah, %edx // edx = 8
+		movzx %al, %eax // eax = 4
+		
+		movl %eax, 0(%rsi)
+		movl %edx, 4(%rsi)
+		
+		ret
 		
 	hex_format_offset:
 		ret
