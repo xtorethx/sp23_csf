@@ -82,7 +82,9 @@ void hex_format_byte_as_hex(unsigned char byteval, char sbuf[]){
 // unmodified.  If byteval is not a printable character, then the
 // ASCII code for '.' should be returned.
 char hex_to_printable(unsigned char byteval){
-    int dec = (int)(byteval);
+    int dec;
+    
+    dec = (int)(byteval);
 
     if (dec >= 32 && dec <= 126) {
         return byteval;
