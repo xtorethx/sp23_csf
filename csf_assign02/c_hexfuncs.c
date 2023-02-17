@@ -65,7 +65,8 @@ char int_to_hexchar(int dec) {
 // Format a byte value (in the range 0-255) as string consisting
 // of two hex digits.  The string is stored in sbuf.
 void hex_format_byte_as_hex(unsigned char byteval, char sbuf[]){
-    int dec = (unsigned int)byteval;
+    int dec;
+    dec = (unsigned int)byteval;
     char div, mod;
     
     div = int_to_hexchar(dec/16); 

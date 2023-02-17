@@ -5,32 +5,38 @@
 	/* TODO: add read-only data such as strings here */
 
 	.section .text
+	.globl hex_to_printable
+	.globl hex_format_byte_as_hex
+	.globl hex_format_offset
+
 
 	/* TODO: add functions here */
 	hex_to_printable:	
-		push % ebp
-		movel %esp, %ebp
-
-		subl $4, %esp //make room for dec
-		
-		movzx 8(%ebp), %esp //move int casted byteval into dec
-		cmpq $32, %esp
+		cmpw $32, %di
 		jl .non_printable //jump if less than 32
-		cmpq $126, %esp
+		cmpw $126, %di
 		jg .non_printable //jump if greater than 126
-		move 8(%esp), %eax
+		movw %di, %ax
 		jmp .done
 	.non_printable: 
-		mov 46, %eax //is this allowed
+		movw $46, %ax 
 		jmp .done
 	.done: 
-		addl $4, %esp 
-		pop %ebp
 		ret
 		
 
 	hex_format_byte_as_hex: 
+		ret
+		//push % ebp
+		//movl %esp, %ebp
 
+		//subl $4, %esp //make room for dec
+		//movzx 8(%ebp), %esp //move int casted byteval into dec
+		//subl $4, %esp //make room for div
+		//sub1 $4, %esp //make room for mod
+		
+	hex_format_offset:
+		ret
 
 /* vim:ft=gas:
  */
