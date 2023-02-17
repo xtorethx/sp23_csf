@@ -25,7 +25,7 @@ int main(void) {
       if (i >= counter) {
         hex_write_string(twospace);
         hex_write_string(space);
-        printable[i] = 32;
+        printable[i] = 0;
       } else {
         hex_format_byte_as_hex(data_buf[i], hexchar);
         hex_write_string(hexchar);
