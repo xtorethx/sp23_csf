@@ -7,14 +7,7 @@
 // Read up to 16 bytes from standard input into data_buf.
 // Returns the number of characters read.
 unsigned hex_read(char data_buf[]){
-    unsigned ret = 0;
-    unsigned tmp = 1;
-    
-    while (tmp > 0) {
-        tmp = read(0, data_buf, 16);
-        ret = ret + tmp;
-    }
-    return ret;
+    return read(0, data_buf, 16);
 }
 
 // Write given nul-terminated string to standard output.
