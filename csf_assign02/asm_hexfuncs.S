@@ -1,7 +1,7 @@
 /* Assembly language implementation of hexdump functions */
 
 	.section .rodata
-hex_string:
+sHexDigits: .string "0123456789abcdef"
 
 	/* TODO: add read-only data such as strings here */
 
@@ -29,22 +29,26 @@ hex_string:
 	hex_format_byte_as_hex: 
 		// unsigned char byteval as %rdi (%edi), char string sbuf as %rsi (%rsi)
 
-		//edi 0x48 72
+		//di 0x48 72
 		//rsi empty string
 
-		movq $0, %rax
-		movq $0, %rdx
-		
-		movw %di, %ax
-		movb $16, %cl
-		divb %cl 
+		and $0xFF, %rdi//take out garbage
 
-		movzx %ah, %edx // edx = 8
-		movzx %al, %eax // eax = 4
-		
-		movb %al, 0(%rsi)
-		movb %ah, 1(%rsi)
-		
+		movq $sHexDigits, %r10
+
+		movq %rdi, %r11
+		and $0xf, %r11 //r11 is mod
+		movb (%r10, %r11), %r9b //decode from table; r9b is char representing mod
+
+		movq %rdi, %rax
+		shr $4, %rax 
+		movb (%r10, %rax), %r8b //r8b is char representing div
+
+		movb %r8b, 0(%rsi)
+		movb %r9b, 1(%rsi)
+		movb $0, 2(%rsi)
+
+		movq %rsi, %rax
 		ret
 		
 	hex_format_offset:
