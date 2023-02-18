@@ -27,6 +27,7 @@ void cleanup(TestObjs *objs) {
 // Prototypes for test functions
 void testFormatOffset(TestObjs *objs);
 void testFormatOffset1(TestObjs *objs);
+void testFormatOffset2(TestObjs *objs);
 void testFormatByteAsHex(TestObjs *objs);
 void testFormatByteAsHex1(TestObjs *objs);
 void testFormatByteAsHex2(TestObjs *objs);
@@ -42,6 +43,7 @@ void testFormatByteAsHex11(TestObjs *objs);
 void testFormatByteAsHex12(TestObjs *objs);
 void testFormatByteAsHex13(TestObjs *objs);
 void testHexToPrintable(TestObjs *objs);
+void testHexToPrintable1(TestObjs *objs);
 
 int main(int argc, char **argv) {
   if (argc > 1) {
@@ -51,6 +53,7 @@ int main(int argc, char **argv) {
   TEST_INIT();
   TEST(testFormatOffset);
   TEST(testFormatOffset1);
+  TEST(testFormatOffset2);
   TEST(testFormatByteAsHex);
   TEST(testFormatByteAsHex1);
   TEST(testFormatByteAsHex2);
@@ -66,6 +69,7 @@ int main(int argc, char **argv) {
   TEST(testFormatByteAsHex12);
   TEST(testFormatByteAsHex13);
   TEST(testHexToPrintable);
+  TEST(testHexToPrintable1);
 
   TEST_FINI();
 
@@ -85,12 +89,26 @@ void testFormatOffset(TestObjs *objs) {
 void testFormatOffset1(TestObjs *objs) {
   (void) objs; // suppress warning about unused parameter
   char buf[16];
-  // test max int value
+  // test zeros
   hex_format_offset(0xffffffffu, buf);
   ASSERT(0 == strcmp(buf, "ffffffff"));
 
-  hex_format_offset(0x00000001u, buf);
-  ASSERT(0 == strcmp(buf, "00000001"));
+  hex_format_offset(0x00000000u, buf);
+  ASSERT(0 == strcmp(buf, "00000000"));
+
+    hex_format_offset(0, buf);
+  ASSERT(0 == strcmp(buf, "00000000"));
+}
+
+void testFormatOffset2(TestObjs *objs) {
+  (void) objs; // suppress warning about unused parameter
+  char buf[16];
+  // test max
+  hex_format_offset(0xffffffffu, buf);
+  ASSERT(0 == strcmp(buf, "ffffffff"));
+
+  hex_format_offset(4294967295, buf);
+  ASSERT(0 == strcmp(buf, "ffffffff"));
 }
 
 //'H'
@@ -194,4 +212,11 @@ void testFormatByteAsHex13(TestObjs *objs) {
 void testHexToPrintable(TestObjs *objs) {
   ASSERT('H' == hex_to_printable(objs->test_data_1[0]));
   ASSERT('.' == hex_to_printable(objs->test_data_1[13]));
+}
+
+void testHexToPrintable1(TestObjs *objs) {
+  // non-printable characters
+  ASSERT('.' == hex_to_printable(0));
+  ASSERT('.' == hex_to_printable(31));
+  ASSERT('.' == hex_to_printable(128));
 }
