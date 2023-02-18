@@ -16,14 +16,15 @@ sHexDigits: .string "0123456789abcdef"
 
 	/* TODO: add functions here */
 	hex_to_printable:	
-		cmpw $32, %di
+	//%di: unsigned byteval
+		cmpw $32, %di 
 		jl .non_printable //jump if less than 32
 		cmpw $126, %di
 		jg .non_printable //jump if greater than 126
-		movw %di, %ax
+		movw %di, %ax //return char byteval
 		jmp .done
 	.non_printable: 
-		movw $46, %ax 
+		movw $46, %ax //return '.'
 		jmp .done
 	.done: 
 		ret
@@ -40,16 +41,16 @@ sHexDigits: .string "0123456789abcdef"
 		movq $sHexDigits, %r10
 
 		movq %rdi, %r11
-		and $0xf, %r11 //r11 is mod
+		and $0xf, %r11 //and 1111 to mod
 		movb (%r10, %r11), %r9b //decode from table; r9b is char representing mod
 
 		movq %rdi, %rax
-		shr $4, %rax 
+		shr $4, %rax //shift right to divide
 		movb (%r10, %rax), %r8b //r8b is char representing div
 
-		movb %r8b, 0(%rsi)
-		movb %r9b, 1(%rsi)
-		movb $0, 2(%rsi)
+		movb %r8b, 0(%rsi) //sbuf[0] = div
+		movb %r9b, 1(%rsi) //sbuf[1] = mod
+		movb $0, 2(%rsi) //sbuf[2] = '\0'
 
 		movq %rsi, %rax
 		ret
