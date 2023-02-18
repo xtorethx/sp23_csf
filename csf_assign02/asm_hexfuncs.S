@@ -1,5 +1,8 @@
-/* Assembly language implementation of hexdump functions */
-
+/*
+ * Assembly language implementation of hexdump functions
+ * D. Zheng   H. Qu
+ * dzheng12@jhu.edu   hqu6@jhu.edu
+ */
 	.section .rodata
 sHexDigits: .string "0123456789abcdef"
 

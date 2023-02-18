@@ -1,4 +1,8 @@
-// C implementation of hexdump main function
+/*
+ * Create a program that takes in input and produces a hexdump of input
+ * D. Zheng   H. Qu
+ * dzheng12@jhu.edu   hqu6@jhu.edu
+ */
 
 #include "hexfuncs.h"  // this is the only header file which may be included!
 
