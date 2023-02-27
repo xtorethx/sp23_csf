@@ -15,25 +15,25 @@ sHexDigits: .string "0123456789abcdef"
 	.globl hex_format_byte_as_hex
 	.globl hex_to_printable
 	
-	
-
 
 	/* TODO: add functions here */
 	hex_read:
 		mov %rdi, %rsi
-		movl $0, %edi
-		movl $16, %edx
+		movq $0, %rdi
+		movq $16, %rdx
 		call read
 		ret
 
 	hex_write_string: 
 	.Ltoploop:
-		cmp $0, (%rdi)
-		.je .Lend
-		movl $1, %edi
-		movl %rdi, %edx
-		movl $1, %ecx
-		inc %rdi
+		movq %rdi, %r8 //move data_buf value into %r8
+		cmp $0, (%r8)
+		je .Lend
+		movq $1, %rdi
+		movq %r8, %rsi
+		movq $1, %rdx
+		call write
+		addq $1, %r8
 		jmp .Ltoploop
 	.Lend:
 		ret
