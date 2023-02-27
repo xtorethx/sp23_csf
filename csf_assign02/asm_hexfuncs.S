@@ -27,6 +27,15 @@ sHexDigits: .string "0123456789abcdef"
 		ret
 
 	hex_write_string: 
+	.Ltoploop:
+		cmp $0, (%rdi)
+		.je .Lend
+		movl $1, %edi
+		movl %rdi, %edx
+		movl $1, %ecx
+		inc %rdi
+		jmp .Ltoploop
+	.Lend:
 		ret
 	
 	hex_format_offset:
