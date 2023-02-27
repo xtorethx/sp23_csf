@@ -9,26 +9,24 @@ sHexDigits: .string "0123456789abcdef"
 	/* TODO: add read-only data such as strings here */
 
 	.section .text
-	.globl hex_to_printable
-	.globl hex_format_byte_as_hex
+	.globl hex_read
+	.globl hex_write_string
 	.globl hex_format_offset
+	.globl hex_format_byte_as_hex
+	.globl hex_to_printable
+	
+	
 
 
 	/* TODO: add functions here */
-	hex_to_printable:	
-	//%di: unsigned byteval
-		cmpw $32, %di 
-		jl .non_printable //jump if less than 32
-		cmpw $126, %di
-		jg .non_printable //jump if greater than 126
-		movw %di, %ax //return char byteval
-		jmp .done
-	.non_printable: 
-		movw $46, %ax //return '.'
-		jmp .done
-	.done: 
+	hex_read:
 		ret
-		
+
+	hex_write_string: 
+		ret
+	
+	hex_format_offset:
+		ret
 
 	hex_format_byte_as_hex: 
 		// unsigned char byteval as %rdi (%edi), char string sbuf as %rsi (%rsi)
@@ -54,8 +52,19 @@ sHexDigits: .string "0123456789abcdef"
 
 		movq %rsi, %rax
 		ret
-		
-	hex_format_offset:
+
+	hex_to_printable:	
+	//%di: unsigned byteval
+		cmpw $32, %di 
+		jl .non_printable //jump if less than 32
+		cmpw $126, %di
+		jg .non_printable //jump if greater than 126
+		movw %di, %ax //return char byteval
+		jmp .done
+	.non_printable: 
+		movw $46, %ax //return '.'
+		jmp .done
+	.done: 
 		ret
 
 /* vim:ft=gas:
