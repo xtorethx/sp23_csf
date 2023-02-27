@@ -27,8 +27,8 @@ sHexDigits: .string "0123456789abcdef"
 	
 	hex_format_offset:
 		movw %di, %r8w //4 bytes from edi to r8d
-		movw $0, %r9w  //r9d = 0, represents counter
-		movw %di, %r10w //4 bytes from edi to r10d
+		movw $0, %r9w  //r9w = 0, represents counter
+		movw %di, %r10w //4 bytes from edi to r10w
 	.Ltopforloop:
 		cmpw $8, %r9w
 		jge .Lendforloop
@@ -42,10 +42,18 @@ sHexDigits: .string "0123456789abcdef"
 		addq $1, %rsi
 		jmp .Ltopforloop
 	.Lendforloop:
-		movw $0, %r9w
-		movw $0, (%rsi)
-		//jmp .Lreversestring
-		//jmp .Lnullterminatestring
+		movw $0, (%rsi) //null terminator
+		movw $0, %r9w //reset index
+	.Ltopforlooprev:
+		cmp $4, %r9w
+		jge .Lnullterminatestring
+		jmp .Lreversestring
+	.Lreversestring:
+		//fill this
+		inc %r9w
+		jmp .Ltopforlooprev
+	.Lnullterminatestring:
+		movw $0, (%rsi) //null terminator
 		movq %rsi, %rax 
 		ret
 
