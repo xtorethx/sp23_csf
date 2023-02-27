@@ -26,6 +26,31 @@ sHexDigits: .string "0123456789abcdef"
 		ret
 	
 	hex_format_offset:
+		movl %edi, %r8d //edi = 1, r8d = 1
+		movl $0, %r9d //r9d = 0
+		movl %edi, %r10d //r10d = 1
+	.Ltopforloop:
+		cmpl $8, %r9d
+		jge .Lendforloop
+		andl $0xf, %r8d //r8d = 1
+		cmpl $10, %r8d
+		jge .Lelsecondition
+		addl $48, %r8d //r8d = 49
+		jmp .Laddtosbuf
+	.Lelsecondition: 
+		addl $87, %r8d
+	.Laddtosbuf: 
+		movl %r8d, %esi //esi = 49
+		shr $4, %r10d
+		movl %r10d, %r8d
+		inc %r9d
+		addq $1, %rsi
+		jmp .Ltopforloop
+	.Lendforloop:
+		movl $0, %r9d
+		//jmp .Lreversestring
+		//jmp .Lnullterminatestring
+		movq %rsi, %rax 
 		ret
 
 	hex_format_byte_as_hex: 
