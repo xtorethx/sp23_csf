@@ -20,6 +20,7 @@ sHexDigits: .string "0123456789abcdef"
 
 	/* TODO: add functions here */
 	hex_read:
+		mov %rdi, %rsi
 		movl $0, %edi
 		movl $16, %edx
 		call read
