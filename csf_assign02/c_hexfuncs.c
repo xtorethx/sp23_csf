@@ -8,6 +8,24 @@
 #include "hexfuncs.h"
 
 /*
+ * Return character corresponding to hex digit
+ *
+ * Parameters:
+ *   dec - integer
+ *
+ * Returns:
+ *   a character
+ */
+char int_to_hexchar(int dec) {
+    if(dec == 0){
+        return '0';
+    }
+    char cov[16] = {'1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+    cov[15] = '\0';
+    return cov[dec-1];
+}
+
+/*
  * Read up to 16 bytes from standard input into data_buf.
  * Returns the number of characters read.
  *
@@ -49,15 +67,7 @@ void hex_format_offset(unsigned offset, char sbuf[]){
     // get char representation
     for (int i = 0; i < 8; i++) {
         rm = offset % 16;
-        // digits
-        if (rm < 10) {
-            rm = rm + 48;
-        // letters
-        } else {
-            rm = rm + 87;
-        }
-
-        sbuf[i] = rm;
+        sbuf[i] = int_to_hexchar(rm);
         offset = offset / 16;
     }
     
@@ -73,24 +83,6 @@ void hex_format_offset(unsigned offset, char sbuf[]){
     
     // null terminate the string
     sbuf[8] = '\0';
-}
-
-/*
- * Return character corresponding to hex digit
- *
- * Parameters:
- *   dec - integer
- *
- * Returns:
- *   a character
- */
-char int_to_hexchar(int dec) {
-    if(dec == 0){
-        return '0';
-    }
-    char cov[16] = {'1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
-    cov[15] = '\0';
-    return cov[dec-1];
 }
 
 /*
