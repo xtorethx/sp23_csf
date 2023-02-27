@@ -65,25 +65,18 @@ void hex_format_offset(unsigned offset, char sbuf[]){
     
     unsigned rm;
     // get char representation
+    int count = 7;
     for (int i = 0; i < 8; i++) {
         rm = offset % 16;
-        sbuf[i] = int_to_hexchar(rm);
+        sbuf[count] = int_to_hexchar(rm);
         offset = offset / 16;
+        count--;
     }
     
-    char temp;
-
-    // hex is flipped, flip the hex string
-    for (int i = 0; i < 4; i++) {  
-        // temp variable use to temporary hold the string  
-        temp = sbuf[i];  
-        sbuf[i] = sbuf[8 - i - 1];  
-        sbuf[8 - i - 1] = temp;  
-    } 
-    
     // null terminate the string
-    sbuf[8] = '\0';
+    sbuf[8] = 0;
 }
+
 
 /*
  * Format a byte value (in the range 0-255) as string consisting

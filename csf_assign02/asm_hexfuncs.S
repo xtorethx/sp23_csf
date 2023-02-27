@@ -20,8 +20,8 @@ sHexDigits: .string "0123456789abcdef"
 
 	/* TODO: add functions here */
 	hex_read:
-		mov1 $0, %edi
-		mov1 $16, %edx
+		movl $0, %edi
+		movl $16, %edx
 		call read
 		ret
 
@@ -29,35 +29,25 @@ sHexDigits: .string "0123456789abcdef"
 		ret
 	
 	hex_format_offset:
-		movw %di, %r8w //4 bytes from edi to r8d
-		movw $0, %r9w  //r9w = 0, represents counter
-		movw %di, %r10w //4 bytes from edi to r10w
+		movq %rdi, %r8 //offset (for mod)
+		movq $0, %r9  //index counter
+		movq %rdi, %r10 //offset (for div)
+		addq $7, %rsi //start rsi from address of last element of sbuf
 	.Ltopforloop:
-		cmpw $8, %r9w
+		cmpq $8, %r9 //for loop check
 		jge .Lendforloop
-		andq $0xf, %r8 //r8d = 1
-		movq $sHexDigits, %r11
-		movb (%r8, %r11), %dl
-		movb %dl, (%rsi)
-		shr $4, %r10w
-		movw %r10w, %r8w
-		inc %r9w
-		addq $1, %rsi
+		andq $0xf, %r8 //offset mod 16
+		movq $sHexDigits, %r11 //string of hex chars for conversion
+		movb (%r8, %r11), %dl //corresponding hex char
+		movb %dl, (%rsi) //move hex char into sbuf output string
+		shr $4, %r10 //offset div 16
+		movq %r10, %r8 //reset offset variable (offset = offset/16)
+		inc %r9 //increment index tracker
+		subq $1, %rsi //point to next char
 		jmp .Ltopforloop
 	.Lendforloop:
-		movw $0, (%rsi) //null terminator
-		movw $0, %r9w //reset index
-	.Ltopforlooprev:
-		cmp $4, %r9w
-		jge .Lnullterminatestring
-		jmp .Lreversestring
-	.Lreversestring:
-		//fill this
-		inc %r9w
-		jmp .Ltopforlooprev
-	.Lnullterminatestring:
-		movw $0, (%rsi) //null terminator
-		movq %rsi, %rax 
+		movw $0, 9(%rsi) //null terminator
+		movq %rsi, %rax //return sbuf
 		ret
 
 	hex_format_byte_as_hex: 
