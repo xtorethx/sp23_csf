@@ -3,6 +3,10 @@
  * D. Zheng   H. Qu
  * dzheng12@jhu.edu   hqu6@jhu.edu
  */
+
+ 	.section .data
+data_buf: .space 16, 0
+
 	.section .rodata
 sHexDigits: .string "0123456789abcdef"
 
@@ -18,7 +22,8 @@ sHexDigits: .string "0123456789abcdef"
 
 	/* TODO: add functions here */
 	hex_read:
-		mov %rdi, %rsi
+		xorq %rsi, %rsi
+		movq $dat_buf, %rsi
 		movq $0, %rdi
 		movq $16, %rdx
 		call read
