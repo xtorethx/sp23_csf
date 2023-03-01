@@ -27,7 +27,7 @@ sHexDigits: .string "0123456789abcdef"
 	hex_write_string: 
 	.Ltoploop:
 		movq %rdi, %r8 //move data_buf value into %r8
-		cmp $0, (%r8)
+		cmpq $0, (%r8)
 		je .Lend
 		movq $1, %rdi
 		movq %r8, %rsi
