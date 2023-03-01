@@ -7,14 +7,15 @@
 #include "hexfuncs.h"  // this is the only header file which may be included!
 
 int main(void) {
-  unsigned counter;
-  char data_buf[16];
-  char sbuf[9];
-  char hexchar[3];
   char colon[] = ":";
   char space[] = " ";
   char twospace[] = "  ";
   char newline[] = "\n";
+  
+  unsigned counter;
+  char data_buf[16];
+  char sbuf[9];
+  char hexchar[3];
   unsigned offset = 0;
   char printable[17];
   printable[16] = 0;
