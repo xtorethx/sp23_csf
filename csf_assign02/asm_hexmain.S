@@ -36,9 +36,9 @@ main:
 	call hex_format_offset
 	movq %rsi, %rdi // sbuf is changed to offset so write offset
 	call hex_write_string
-	movw $colon, %di // write :
+	movq $colon, %rdi // write :
 	call hex_write_string
-	movw $space, %di
+	movq $space, %rdi
 	call hex_write_string
 	//start from here
 	xorq %r14, %r14 // 0 out loop counter
@@ -56,7 +56,7 @@ main:
 	call hex_format_byte_as_hex
 	movl %esi, %edi // move changed %esi to first arg
 	call hex_write_string
-	movw $space, %di
+	movq $space, %rdi
 	call hex_write_string // write space
 	movq (%r10, %r14), %rdi
 	call hex_to_printable
@@ -71,18 +71,18 @@ main:
 .LshortLine:
 	movl $twospace, %edi
 	call hex_write_string
-	movw $space, %di
+	movq $space, %rdi
 	call hex_write_string
 	movq $0, (%r15, %r14) // null terminate at printable[i]
 	incq %r14
 	jmp .LloopCond
 
 .LwhileNextLine:
-	movw $space, %di
+	movq $space, %rdi
 	call hex_write_string // write space
 	movq %r15, %rdi // printable to first arg
 	call hex_write_string
-	movw $newline, %di
+	movq $newline, %rdi
 	call hex_write_string // write newline
 	addl %r8d, %r9d
 	movq $data_buf, %rdi // move dat_buf base address to rdi
