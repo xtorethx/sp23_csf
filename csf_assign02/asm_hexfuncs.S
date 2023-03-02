@@ -20,21 +20,21 @@ sHexDigits: .string "0123456789abcdef"
 	/* TODO: add functions here */
 	hex_read:
 		movq %rdi, %rsi
-		movq $0, %rdi
 		movq $16, %rdx
+		movq $0, %rdi
 		call read
 		ret
 
 	hex_write_string: 
-		movq %rdi, %r8 //move data_buf value into %r8
+		movq %rdi, %rsi //move s to second arg
 	.Ltoploop:
-		cmpq $0, (%r8)
+		cmpb $0, (%rsi)
 		je .Lend
-		movq $1, %rdi
-		movq %r8, %rsi
-		movq $1, %rdx
-		call write
-		addq $1, %r8
+		movl $1, %edi
+		movl $1, %edx
+		movq $1, %rax
+		syscall
+		addq $1, %rsi
 		jmp .Ltoploop
 	.Lend:
 		ret

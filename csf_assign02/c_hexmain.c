@@ -13,7 +13,7 @@ int main(void) {
   char newline[] = "\n";
   
   unsigned counter;
-  char data_buf[16];
+  char data_buf[17];
   char sbuf[9];
   char hexchar[3];
   unsigned offset = 0;
