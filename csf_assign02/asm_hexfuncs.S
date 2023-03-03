@@ -19,25 +19,23 @@ sHexDigits: .string "0123456789abcdef"
 
 	/* TODO: add functions here */
 	hex_read:
-		movq %rdi, %rsi
-		movq $0, %rdx
-		movq $16, %rdx
-		movq $0, %rdi
+		movq %rdi, %rsi // first arg (data_buf) to second arg
+		movq $16, %rdx // set num chars read as 16
+		movq $0, %rdi // 0 for read
 		call read
 		ret
 
 	hex_write_string: 
 		movq %rdi, %rsi //move s to second arg
 	.Ltoploop:
-		cmpb $0, (%rsi)
-		je .Lend
+		cmpb $0, (%rsi) // check that null terminator is not reached
+		je .Lend // jump to end if so
 		movl $1, %edi //first parameter
 		andq $0xffff, %rdi //clear out potential garbage
 		movl $1, %edx //third parameter
 		andq $0xffff, %rdx //clear garbage
-		movq $1, %rax //what is this???
-		syscall
-		addq $1, %rsi
+		call write
+		addq $1, %rsi // increment to next char
 		jmp .Ltoploop
 	.Lend:
 		ret
@@ -86,7 +84,7 @@ sHexDigits: .string "0123456789abcdef"
 		movb %r9b, 1(%rsi) //sbuf[1] = mod
 		movb $0, 2(%rsi) //sbuf[2] = '\0'
 
-		movq %rsi, %rax
+		movq %rsi, %rax // return formated sbuf
 		ret
 
 	hex_to_printable:	

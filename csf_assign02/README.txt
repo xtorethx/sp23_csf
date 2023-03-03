@@ -1,6 +1,5 @@
-Hannah Qu
-Dru Zheng
+Hannah Qu hqu6@jhu.edu
+Dru Zheng dzheng12@jhu.edu
 
-We split up the functions. Hannah implemented hex_format_byte_as_hex and hex_to_printable in C along
-with the assembly implementations of hex_to_printable and hex_format_byte_as_hex. Dru implemented hex_read,
-hex_wrote_string, and hex_format_offset in C.
+We split up the work equally. We wrote and edited most of the functions
+and main together and checked each others code.

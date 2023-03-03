@@ -1,4 +1,6 @@
 /* Hexdump main function, assembly language version */
+/* Hannah Qu hqu6@jhu.edu */
+/* Dru Zheng dzheng12@jhu.edu */
 
 	.section .data
 data_buf: .space 16, 0
@@ -70,8 +72,11 @@ main:
 .LloopCond:
 	cmpq $16, %r14 //line 29 in main
 	jb .LloopTop // jump back if loop counter < 16
-	jmp .LwhileNextLine
+	jmp .LprintAndRead
 
+
+// this is the case when last line is reached where line is less
+// than 16 chars
 .LshortLine:
 	movq $twospace, %rdi
 	call hex_write_string //line 31
@@ -81,7 +86,7 @@ main:
 	incq %r14
 	jmp .LloopCond
 
-.LwhileNextLine:
+.LprintAndRead:
 	movq $space, %rdi
 	call hex_write_string // write space
 	movq %r15, %rdi // printable to first arg
