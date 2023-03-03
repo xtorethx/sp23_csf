@@ -20,6 +20,7 @@ sHexDigits: .string "0123456789abcdef"
 	/* TODO: add functions here */
 	hex_read:
 		movq %rdi, %rsi
+		movq $0, %rdx
 		movq $16, %rdx
 		movq $0, %rdi
 		call read
@@ -30,9 +31,11 @@ sHexDigits: .string "0123456789abcdef"
 	.Ltoploop:
 		cmpb $0, (%rsi)
 		je .Lend
-		movl $1, %edi
-		movl $1, %edx
-		movq $1, %rax
+		movl $1, %edi //first parameter
+		andq $0xffff, %rdi //clear out potential garbage
+		movl $1, %edx //third parameter
+		andq $0xffff, %rdx //clear garbage
+		movq $1, %rax //what is this???
 		syscall
 		addq $1, %rsi
 		jmp .Ltoploop
@@ -57,7 +60,7 @@ sHexDigits: .string "0123456789abcdef"
 		subq $1, %rsi //point to next char
 		jmp .Ltopforloop
 	.Lendforloop:
-		movw $0, 9(%rsi) //null terminator
+		movb $0, 9(%rsi) //null terminator
 		movq %rsi, %rax //return sbuf
 		ret
 

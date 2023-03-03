@@ -23,24 +23,24 @@ newline: .string "\n"
 main:
 	/* TODO: add your code here */
 	movq $data_buf, %rdi // move dat_buf base address to rdi
-	call hex_read // call hex_read on data_buf
+	call hex_read // call hex_read on data_buf (line 23 in main)
 	movq %rdi, %r10 // save data_buf
-	movl %eax, %r8d // move result of hex_read into r8
+	movl %eax, %r8d // move result of hex_read into r8; r8 = counter
 	xorl %r9d, %r9d // 0 out r9 (offset)
 .LwhileLoop:
-	cmpl $0, %r8d // compare 0 and the counter
+	cmpl $0, %r8d // compare 0 and the counter; line 24 in main
 	je .LwhileLoopDone // finish loop when 
 
 	movl %r9d, %edi //moving offset into first param
+	andq $0xffff, %rdi //clear garbage in rdi, only hold 16 bytes of offset
 	movq $sbuf, %rsi //moving sbuf into second param
-	call hex_format_offset
+	call hex_format_offset // line 25 in main
 	movq %rsi, %rdi // sbuf is changed to offset so write offset
-	call hex_write_string
+	call hex_write_string //line 26 in main
 	movq $colon, %rdi // write :
-	call hex_write_string
+	call hex_write_string //line 27
 	movq $space, %rdi
-	call hex_write_string
-	//start from here
+	call hex_write_string //line 28
 	xorq %r14, %r14 // 0 out loop counter
 	xorq %r15, %r15 // 0 printable
 	movq $printable, %r15 // move 16 empty printable string into r15 register
@@ -48,32 +48,36 @@ main:
 // %r14 is i
 // %r8 is counter
 .LloopTop:
-	cmpl %r14d, %r8d
+	cmpl %r14d, %r8d //check if stay in loop; line 30 min main
 	jbe .LshortLine // line 30 in c_hexmain
-	movq (%r10, %r14), %rdi // move data_buf[i] to first arg
+	movb (%r10, %r14), %dil // move data_buf[i] to first arg
+	andq $0xf, %rdi
 	xorl %r11d, %r11d // 0 out tmp register
 	movl %r11d, %esi // put in 2nd arg
-	call hex_format_byte_as_hex
-	movl %esi, %edi // move changed %esi to first arg
-	call hex_write_string
+	andq $0xffff, %rsi //rsi stores hexchar
+	call hex_format_byte_as_hex //line 35
+	movq %rsi, %rdi // move changed %esi to first arg
+	call hex_write_string//line 36 in main
 	movq $space, %rdi
-	call hex_write_string // write space
-	movq (%r10, %r14), %rdi
+	call hex_write_string // write space (line 37 in main)
+	movq (%r10, %r14), %rdi //databuf[i]
+	andq $0xf, %rdi
 	call hex_to_printable
-	movq %rax, (%r15, %r14) // move result to printable[i]
+	movb %al, (%r15, %r14) // move result to printable[i] (line 38)
+	andq $0xf, %rax
 	incq %r14
 
 .LloopCond:
-	cmpq $16, %r14
+	cmpq $16, %r14 //line 29 in main
 	jb .LloopTop // jump back if loop counter < 16
 	jmp .LwhileNextLine
 
 .LshortLine:
-	movl $twospace, %edi
-	call hex_write_string
+	movq $twospace, %rdi
+	call hex_write_string //line 31
 	movq $space, %rdi
-	call hex_write_string
-	movq $0, (%r15, %r14) // null terminate at printable[i]
+	call hex_write_string //line 32
+	movb $0, (%r15, %r14) // null terminate at printable[i] (line 33 in main)
 	incq %r14
 	jmp .LloopCond
 
