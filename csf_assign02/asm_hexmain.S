@@ -35,7 +35,7 @@ main:
 	andq $0xffff, %rdi //clear garbage in rdi, only hold 16 bytes of offset
 	movq $sbuf, %rsi //moving sbuf into second param
 	call hex_format_offset // line 25 in main
-	inc %rsi
+	incq %rsi
 	movq %rsi, %rdi // sbuf is changed to offset so write offset
 	call hex_write_string //line 26 in main
 	movq $colon, %rdi // write :
@@ -91,7 +91,8 @@ main:
 	addl %ebx, %r12d//line 44 in main
 	movq $data_buf, %rdi // move dat_buf base address to rdi
 	call hex_read // call hex_read on data_buf
-	movq %rdi, %r13 // save data_buf
+	
+	movq %rsi, %r13 // save data_buf
 	movl %eax, %ebx // move result of hex_read into rbx (counter)
 	jmp .LwhileLoop
 
