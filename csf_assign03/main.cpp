@@ -9,6 +9,38 @@ using namespace std;
 
 void show_commands() {
 	std::cout << "List of arguments Iin order):" << std::endl;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
 	std::cout << "\tNumber of sets in the cache (positve power-of-2)" << std::endl;
 	std::cout << "\tnumber of blocks in each set (a positive power-of-2)" << std::endl;
 	std::cout << "\tnumber of bytes in each block (a positive power-of-2, at least 4)" << std::endl;
