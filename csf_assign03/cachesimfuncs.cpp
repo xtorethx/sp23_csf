@@ -23,11 +23,48 @@ struct Cache{
     std::vector <Set> sets;
 };
 
-//possible functions/helper functions:
-//initialize slot
-//cache hit
-//cache miss
-//seq_search: find valid block in set with matching tag (boolean function)
-//
+//read memory access trace from standard input
+void read() {
+}
+
+//write to standard output
+void write() {
+}
+
+//load
+void load() {
+    //if hit --> do nothing
+    //if miss --> check if empty
+    //if empty --> write
+    //if not empty --> LRU
+}
+
+//store
+void store() {
+    //if hit
+    //if write-through --> call write through
+    //if write-back --> call write-back
+
+    //if miss
+    //if write-allocate --> call write allocate
+    //if no-write-allocate --> call no-write-allocate
+}
+
+//write-through
+void write_through(){
+
+}
+
+void write_back(){
+
+}
+
+void write_allocate(){
+
+}
+
+void no_write_allocate(){
+
+}
 
 #endif
