@@ -31,9 +31,28 @@ void read() {
 void write() {
 }
 
-//hex to int function (copy from assignment 2)
-unsigned hex_to_int() {
-    return 0;
+//char to int helper function
+int hexchar_to_int(char hex) {
+    char hexchar[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+    for (int i = 0; i < 16; i++) {
+        if (hexchar[i] == hex) {
+            return i;
+        }
+    }
+}
+
+//hex to dec function 
+unsigned hex_to_dec(char hex[]) {
+    unsigned sum;
+    for (int i = 0; i < 8; i++) {
+        unsigned prod = 1;
+        for (int j = 7-i; j >0; j--) {
+            prod *= 16;
+        }
+        prod *= hexchar_to_int(hex[i]);
+        sum += prod;
+    }
+    return sum;
 }
 
 //int to cache 
