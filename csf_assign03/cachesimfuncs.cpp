@@ -31,6 +31,24 @@ void read() {
 void write() {
 }
 
+//hex to int function (copy from assignment 2)
+unsigned hex_to_int() {
+    return 0;
+}
+
+//int to cache 
+struct Slot int_to_cache() {
+    return NULL;
+}
+
+//add Slot to Set
+void slot_to_set() {
+}
+
+//add Set to Cache
+void set_to_cache() {
+}
+
 //load
 void load() {
     //if hit --> do nothing
