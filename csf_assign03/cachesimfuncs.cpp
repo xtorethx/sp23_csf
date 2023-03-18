@@ -18,12 +18,11 @@ struct Slot{
 };
 
 struct Set{
-    std::vector <Slot> slots;
-    std::map <uint32_t, Slot *> index; //used to map tags to valid blocks, which valid blocks have been stored in set, key is tag value is pointer to corresponding slot
+    std::map <uint32_t, Slot *> index; //used to map offsets to valid blocks, which valid blocks have been stored in set, key is tag value is pointer to corresponding slot
 };
 
 struct Cache{
-    std::vector <Set> sets;
+    std::map <uint32_t, Set *> sets; // map indices to sets
 };
 
 // memory address is tag index offset
@@ -77,8 +76,21 @@ unsigned get_index(unsigned address, unsigned blocksize, unsigned numsetsize) {
 unsigned get_offset(unsigned address, unsigned blocksize) {
     return address >> (32 - blocksize);
 }
+
+struct Cache buildCache(unsigned numsets, unsigned blocksperset, unsigned bytesperblock) {
+    struct Cache cache;
+    cache.sets = std::map <uint32_t, Set *> sets;
+    for (int i = 0; i < numsets; i++) {
+        struct Set set;
+        for (int j = 0; j < blocksperset; j++) {
+            set.index
+        }
+        sets[i] = 
+    }
+}
+
 //int to slot 
-struct Slot int_to_slot(unsigned address) {
+struct Slot mem_to_slot(unsigned address) {
     struct Slot slot;
     unsigned tag = get_tag(address);
 }

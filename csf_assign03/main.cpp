@@ -10,37 +10,6 @@ using namespace std;
 void show_commands() {
 	std::cout << "List of arguments Iin order):" << std::endl;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	
 	std::cout << "\tNumber of sets in the cache (positve power-of-2)" << std::endl;
 	std::cout << "\tnumber of blocks in each set (a positive power-of-2)" << std::endl;
 	std::cout << "\tnumber of bytes in each block (a positive power-of-2, at least 4)" << std::endl;
@@ -56,5 +25,8 @@ void show_commands() {
 }
 
 int main(int argc, char** argv) {
-    //TO DO: Write main
+    unsigned numsets = argv[1];
+    unsigned blocksperset = argv[2];
+    unsigned bytesperblock = argv[3];
+    struct Cache cache = buildCache(numsets, blocksperset, bytesperblock);
 }
