@@ -10,8 +10,10 @@
 //TO DO: Write Functions
 struct Slot{
     uint32_t tag;
+    // default valid to false, adding slot to set set to true
     bool valid;
     uint32_t load_ts, access_ts;
+    bool dirty;
 };
 
 struct Set{
@@ -23,8 +25,12 @@ struct Cache{
     std::vector <Set> sets;
 };
 
+// memory address is tag index offset
+// given: num sets, num blocks, num bytes/ block (= block size)
+// tag is
 //read memory access trace from standard input
 void read() {
+    return read(0, )
 }
 
 //write to standard output
@@ -55,9 +61,21 @@ unsigned hex_to_dec(char hex[]) {
     return sum;
 }
 
-//int to cache 
-struct Slot int_to_cache() {
-    return NULL;
+unsigned get_tag(unsigned address) {
+    return address >> (blocksize + numsets);
+}
+
+unsigned get_index(unsigned address) {
+    return null;
+}
+
+unsigned get_offset(unsigned address) {
+    return null;
+}
+//int to slot 
+struct Slot int_to_slot(unsigned address) {
+    struct Slot slot;
+    unsigned tag = get_tag(address)
 }
 
 //add Slot to Set
