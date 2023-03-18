@@ -6,6 +6,8 @@
 #include <vector>
 #include <map>
 #include <cstdio>
+#include <algorithm>
+#include <cmath>
 #include "cachesimfuncs.h"
 
 //TO DO: Write Functions
@@ -18,7 +20,8 @@ struct Slot{
 };
 
 struct Set{
-    std::map <uint32_t, Slot *> index; //used to map offsets to valid blocks, which valid blocks have been stored in set, key is tag value is pointer to corresponding slot
+    std::map <uint32_t, Slot *> index; //used to map offsets to valid blocks, which valid blocks have been stored in set, key is offset value is pointer to corresponding slot
+    std::vector <uint32_t> valid_offsets; //track which offsets has valid slots
 };
 
 struct Cache{
@@ -63,36 +66,57 @@ unsigned hex_to_dec(char hex[]) {
     return sum;
 }
 
-unsigned get_tag(unsigned address, unsigned blocksize, unsigned numsetsize) {
-    return address >> (blocksize + numsets);
+unsigned get_tag(unsigned address, unsigned blocksperset, unsigned numsets) {
+    unsigned blockbits = log2(blocksperset) + 1;
+    unsigned setbits = log2(numsets) + 1;
+    return address >> (blockbits + setbits);
 }
 
-unsigned get_index(unsigned address, unsigned blocksize, unsigned numsetsize) {
-    unsigned index = address << (32 - (blocksize + numsetsize));
-    index = index >> blocksize;
+unsigned get_index(unsigned address, unsigned blocksperset, unsigned numsets) {
+    unsigned blockbits = log2(blocksperset) + 1;
+    unsigned setbits = log2(numsets) + 1;
+    unsigned index = address << (32 - (blockbits + setbits));
+    index = index >> blockbits;
     return index;
 }
 
-unsigned get_offset(unsigned address, unsigned blocksize) {
-    return address >> (32 - blocksize);
+unsigned get_offset(unsigned address, unsigned blocksperset) {
+    unsigned blockbits = log2(blocksperset) + 1;
+    return address >> (32 - blocksperset);
 }
 
 struct Cache buildCache(unsigned numsets, unsigned blocksperset, unsigned bytesperblock) {
     struct Cache cache;
     cache.sets = std::map <uint32_t, Set *> sets;
     for (int i = 0; i < numsets; i++) {
-        struct Set set;
+        std::map <uint32_t, Slot *> slots;
         for (int j = 0; j < blocksperset; j++) {
-            set.index
+            struct Slot slot;
+            slot.valid = false;
+            slot.dirty = false;
+            slots[i] = slot;
         }
-        sets[i] = 
+        sets[i] = slots;
     }
 }
 
-//int to slot 
-struct Slot mem_to_slot(unsigned address) {
+//memory address turns slot to valid
+struct Slot mem_to_slot(struct Cache cache, unsigned address, unsigned blocksize, unsigned numsetsize) {
     struct Slot slot;
-    unsigned tag = get_tag(address);
+    unsigned tag = get_tag(address, blocksize, numsetsize);
+    unsigned index = get_index(address, blocksize, numsetsize);
+    unsigned offset = get_offset(address, blocksize);
+    for (int i = 0; i < numsets; i++) {
+        std::map <uint32_t, Slot *> slots;
+        for (int j = 0; j < blocksperset; j++) {
+            struct Slot slot;
+            slot.valid = false;
+            slot.dirty = false;
+            slots[i] = slot;
+        }
+        sets[i] = slots;
+    }
+
 }
 
 //add Slot to Set
