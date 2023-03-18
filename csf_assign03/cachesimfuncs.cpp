@@ -20,7 +20,7 @@ struct Slot{
 };
 
 struct Set{
-    std::map <uint32_t, Slot *> index; //used to map offsets to valid blocks, which valid blocks have been stored in set, key is offset value is pointer to corresponding slot
+    std::map <uint32_t, Slot *> index; //key is offset, value is pointer to corresponding slot
 };
 
 struct Cache{
@@ -132,41 +132,117 @@ void slot_to_set() {
 void set_to_cache() {
 }
 
-//load (set_length = number of blocks per each set/index)
-void load(unsigned set_length, unsigned address, struct Cache cache) {
-    unsigned tag = get_tag(address);
-    unsigned index = get_index(address);
-    unsigned offset = get_offset(address);
-
-    //if hit --> do nothing
+//load direct mapping (set_length = number of blocks per each set/index)
+void load_dm(unsigned address, struct Cache cache) {
+    unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
+    unsigned index = get_index(address, cache.blocksperset, cache.numsets);
+    unsigned offset = get_offset(address, cache.blocksperset);
     
     std::map <uint32_t, Set *> sets = cache.sets;
     
-
     //iterate through cache and set corresponding tag
     for (auto it = sets.begin(); it != sets.end(); it++) { // go through the sets in cache
         if (it -> first == index) { //at correct index
             std::map <uint32_t, Slot *> slots = (*it -> second).index;
             for (auto it2 = slots.begin(); it2 != slots.end(); it2++) { // found the set, go through the offset in the set
                 //increment all the valid load access timestamps of slots at correct index
-                if ((*it2 -> second).valid) {
-                    (*it2 -> second).load_ts = ((*it2 -> second).load_ts % set_length); 
-                }
                 if (it2 -> first == offset) { // found the slot, now to load
                     //if tag is null --> fill
-                    if ((*it2 -> second).tag == NULL) {
-                        (*it2 -> second).valid = true; //fill slot
-                        (*it2 -> second).load_ts++;
-                        (*it2 -> second).access_ts++;
+                    if ((*it2 -> second).tag == NULL || (*it2 -> second).tag != tag ) { //if not filled or tag doesn't match
                         (*it2 -> second).tag = tag;
                     }
-                    //if tag not null --> LRU 
-                    //do I need another iterator? this implementation might be wrong
-                    else if ((*it2 -> second).tag != tag) {
-                        if ((*it2 -> second).access_ts == set_length) { //override least recently used
-                            (*it2 -> second).tag = tag;
-                        } 
-                    }
+                }
+            }
+        }
+    }
+}
+
+//loading set associative
+void load_sa(unsigned set_length, unsigned address, struct Cache cache) {
+    // unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
+    // unsigned index = get_index(address, cache.blocksperset, cache.numsets);
+    // unsigned offset = get_offset(address, cache.blocksperset);
+
+    // //if hit --> do nothing
+    
+    // std::map <uint32_t, Set *> sets = cache.sets;
+    
+    // //iterate through cache and set corresponding tag
+    // for (auto it = sets.begin(); it != sets.end(); it++) { // go through the sets in cache
+    //     if (it -> first == index) { //at correct index
+    //         std::map <uint32_t, Slot *> slots = (*it -> second).index;
+    //         for (auto it2 = slots.begin(); it2 != slots.end(); it2++) { // found the set, go through the offset in the set
+    //             //increment all the valid load access timestamps of slots at correct index
+    //             //direct-mapping
+    //             if (it2 -> first == offset) { // found the slot, now to load
+    //                 //if tag is null --> fill
+    //                 if ((*it2 -> second).tag == NULL || (*it2 -> second).tag != tag ) { //if not filled or tag doesn't match
+    //                     (*it2 -> second).tag = tag;
+    //                 }
+    //             }
+
+    //             //set-associative
+
+    //             //fully associative
+
+    //             if ((*it2 -> second).valid) {
+    //                 (*it2 -> second).load_ts++; 
+    //             }
+    //             if (it2 -> first == offset) { // found the slot, now to load
+    //                 //if tag is null --> fill
+    //                 if ((*it2 -> second).tag == NULL) {
+    //                     (*it2 -> second).valid = true; //fill slot
+    //                     (*it2 -> second).load_ts++;
+    //                     (*it2 -> second).access_ts++;
+    //                     (*it2 -> second).tag = tag;
+    //                 }
+    //                 //if tag not null --> LRU 
+    //                 //do I need another iterator? this implementation might be wrong
+    //                 else if ((*it2 -> second).tag != tag) {
+    //                     if ((*it2 -> second).access_ts == set_length) { //override least recently used
+    //                         (*it2 -> second).tag = tag;
+    //                     } 
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+}
+
+//loading fully associative
+void load_fa(unsigned set_length, unsigned address, struct Cache cache) {
+    unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
+    unsigned index = get_index(address, cache.blocksperset, cache.numsets);
+    unsigned offset = get_offset(address, cache.blocksperset);
+    
+    std::map <uint32_t, Set *> sets = cache.sets;
+    bool hit = false; //check if cache hit
+    
+    //iterate through cache and set corresponding tag
+    for (auto it = sets.begin(); it != sets.end(); it++) { // go through the sets in cache
+        std::map <uint32_t, Slot *> slots = (*it -> second).index;
+        for (auto it2 = slots.begin(); it2 != slots.end(); it2++) { // go through the offset in the set
+            if (it2 -> first == offset) { // offset matches
+                if ((*it2 -> second).tag == tag) { //tag matches
+                        hit = true; //cache hit
+                }
+            }
+        }
+    }
+
+    if (!hit) {//cache miss --> load into empty
+        for (auto it = sets.begin(); it != sets.end(); it++) { // go through the sets in cache
+        std::map <uint32_t, Slot *> slots = (*it -> second).index;
+            for (auto it2 = slots.begin(); it2 != slots.end(); it2++) { // go through the offset in the set
+                if (!(*it2 -> second).valid) {//unfilled slot 
+                    struct Slot temp = *it2 -> second;
+                    slots.erase(it2 -> first);
+                    slots.insert(offset, temp); //why doesn't this work im confused
+
+                    // it2 -> first = offset;
+                    // (*it2 -> second).tag = tag;
+                    // (*it2 -> second).valid = true;
+                    // std::map<uint32_t, Slot *, std::less<uint32_t>, std::allocator<std::pair<const uint32_t, Slot *>>>
                 }
             }
         }
