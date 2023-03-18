@@ -92,11 +92,34 @@ void set_to_cache() {
 }
 
 //load
-void load() {
+void load(unsigned address, struct Cache cache) {
+    unsigned tag = get_tag(address);
+    unsigned index = get_index(address);
+    unsigned offset = get_offset(address);
     //if hit --> do nothing
-    //if miss --> check if empty
-    //if empty --> write
-    //if not empty --> LRU
+    
+    std::map <uint32_t, Set *> sets = cache.sets;
+
+    bool filled = false; //check index exists
+    bool val_match = false; //check if value matches (in filled slot)
+    
+    for (auto it = sets.begin(); it != sets.end(); it++) { // go through the sets in cache
+        if (it -> first == index) { //at correct index
+            std::map <uint32_t, Slot *> slots = (*it -> second).index;
+            for (auto it2 = slots.begin(); it2 != slots.end(); it2++) { // found the set, go through the offset in the set
+                if (it2 -> first == offset) { // found the slot, now to load
+                    //if tag is null --> fill
+                    if ((*it2 -> second).tag == NULL) {
+                        (*it2 -> second).tag = tag;
+                    }
+                    //if tag not null --> LRU (not applicable for direct mapping)
+                    else if ((*it2 -> second).tag != tag) {
+                        (*it2 -> second).tag = tag;
+                    }
+                }
+            }
+        }
+    }
 }
 
 //store
