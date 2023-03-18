@@ -99,9 +99,6 @@ void load(unsigned address, struct Cache cache) {
     //if hit --> do nothing
     
     std::map <uint32_t, Set *> sets = cache.sets;
-
-    bool filled = false; //check index exists
-    bool val_match = false; //check if value matches (in filled slot)
     
     for (auto it = sets.begin(); it != sets.end(); it++) { // go through the sets in cache
         if (it -> first == index) { //at correct index
@@ -123,31 +120,48 @@ void load(unsigned address, struct Cache cache) {
 }
 
 //store
-void store() {
+void store(unsigned address, struct Cache cache, bool wt, bool wb, bool wa, bool nwa) {
     //if hit
-    //if write-through --> call write through
-    //if write-back --> call write-back
+    unsigned tag = get_tag(address);
+    unsigned index = get_index(address);
+    unsigned offset = get_offset(address);
+    //if hit --> do nothing
+    
+    std::map <uint32_t, Set *> sets = cache.sets;
 
-    //if miss
-    //if write-allocate --> call write allocate
-    //if no-write-allocate --> call no-write-allocate
-}
+    bool hit = false; //check index exists
+    bool val_match = false; //check if value matches (in filled slot)
+    
+    for (auto it = sets.begin(); it != sets.end(); it++) { // go through the sets in cache
+        if (it -> first == index) { //at correct index
+            std::map <uint32_t, Slot *> slots = (*it -> second).index;
+            for (auto it2 = slots.begin(); it2 != slots.end(); it2++) { // found the set, go through the offset in the set
+                if (it2 -> first == offset) { // found the slot, now to load
+                    //if tag is null --> fill
+                    if ((*it2 -> second).tag == tag) {//cache hit
+                        hit = true;
+                        if (wt) {
+                            //increment write-through counter
+                        }
+                        else {
+                            //increment write-back counter
+                            (*it2 -> second).dirty = true;
+                        }
+                    }
+                    else {//cache miss
+                        if (wa) {
+                            (*it2 -> second).tag = tag
+                            //increment write-allocate counter
 
-//write-through
-void write_through(){
-
-}
-
-void write_back(){
-
-}
-
-void write_allocate(){
-
-}
-
-void no_write_allocate(){
-
+                        }
+                        else {
+                            //increment no-write-allocate counter
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 #endif
