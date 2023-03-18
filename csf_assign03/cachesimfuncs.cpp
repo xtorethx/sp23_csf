@@ -127,27 +127,40 @@ void slot_to_set() {
 void set_to_cache() {
 }
 
-//load
-void load(unsigned address, struct Cache cache) {
+//load (set_length = number of blocks per each set/index)
+void load(unsigned set_length, unsigned address, struct Cache cache) {
     unsigned tag = get_tag(address);
     unsigned index = get_index(address);
     unsigned offset = get_offset(address);
+
     //if hit --> do nothing
     
     std::map <uint32_t, Set *> sets = cache.sets;
     
+
+    //iterate through cache and set corresponding tag
     for (auto it = sets.begin(); it != sets.end(); it++) { // go through the sets in cache
         if (it -> first == index) { //at correct index
             std::map <uint32_t, Slot *> slots = (*it -> second).index;
             for (auto it2 = slots.begin(); it2 != slots.end(); it2++) { // found the set, go through the offset in the set
+                //increment all the valid load access timestamps of slots at correct index
+                if ((*it2 -> second).valid) {
+                    (*it2 -> second).load_ts = ((*it2 -> second).load_ts % set_length); 
+                }
                 if (it2 -> first == offset) { // found the slot, now to load
                     //if tag is null --> fill
                     if ((*it2 -> second).tag == NULL) {
+                        (*it2 -> second).valid = true; //fill slot
+                        (*it2 -> second).load_ts++;
+                        (*it2 -> second).access_ts++;
                         (*it2 -> second).tag = tag;
                     }
-                    //if tag not null --> LRU (not applicable for direct mapping)
+                    //if tag not null --> LRU 
+                    //do I need another iterator? this implementation might be wrong
                     else if ((*it2 -> second).tag != tag) {
-                        (*it2 -> second).tag = tag;
+                        if ((*it2 -> second).access_ts == set_length) { //override least recently used
+                            (*it2 -> second).tag = tag;
+                        } 
                     }
                 }
             }
