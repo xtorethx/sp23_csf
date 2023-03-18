@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <cstdio>
 #include "cachesimfuncs.h"
 
 //TO DO: Write Functions
@@ -29,8 +30,10 @@ struct Cache{
 // given: num sets, num blocks, num bytes/ block (= block size)
 // tag is
 //read memory access trace from standard input
-void read() {
-    return read(0, )
+void read(char ls, char memaddress[], char tmp) {
+    scanf("%c", ls);
+    scanf("%10s", memaddress);
+    scanf("%c", tmp);
 }
 
 //write to standard output
@@ -61,21 +64,23 @@ unsigned hex_to_dec(char hex[]) {
     return sum;
 }
 
-unsigned get_tag(unsigned address) {
+unsigned get_tag(unsigned address, unsigned blocksize, unsigned numsetsize) {
     return address >> (blocksize + numsets);
 }
 
-unsigned get_index(unsigned address) {
-    return null;
+unsigned get_index(unsigned address, unsigned blocksize, unsigned numsetsize) {
+    unsigned index = address << (32 - (blocksize + numsetsize));
+    index = index >> blocksize;
+    return index;
 }
 
-unsigned get_offset(unsigned address) {
-    return null;
+unsigned get_offset(unsigned address, unsigned blocksize) {
+    return address >> (32 - blocksize);
 }
 //int to slot 
 struct Slot int_to_slot(unsigned address) {
     struct Slot slot;
-    unsigned tag = get_tag(address)
+    unsigned tag = get_tag(address);
 }
 
 //add Slot to Set
