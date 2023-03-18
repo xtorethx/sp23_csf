@@ -21,11 +21,13 @@ struct Slot{
 
 struct Set{
     std::map <uint32_t, Slot *> index; //used to map offsets to valid blocks, which valid blocks have been stored in set, key is offset value is pointer to corresponding slot
-    std::vector <uint32_t> valid_offsets; //track which offsets has valid slots
 };
 
 struct Cache{
     std::map <uint32_t, Set *> sets; // map indices to sets
+    unsigned numsets;
+    unsigned blocksperset;
+    unsigned bytesperblock;
 };
 
 // memory address is tag index offset
@@ -87,6 +89,9 @@ unsigned get_offset(unsigned address, unsigned blocksperset) {
 
 struct Cache buildCache(unsigned numsets, unsigned blocksperset, unsigned bytesperblock) {
     struct Cache cache;
+    cache.numsets = numsets;
+    cache.blocksperset = blocksperset;
+    cache.bytersperblock = bytesperblock;
     cache.sets = std::map <uint32_t, Set *> sets;
     for (int i = 0; i < numsets; i++) {
         std::map <uint32_t, Slot *> slots;
