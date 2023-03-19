@@ -19,7 +19,8 @@ struct Slot{
 };
 
 struct Set{
-    std::map <uint32_t, Slot *> set; //key is offset, value is pointer to corresponding slot
+    uint32_t offset;
+    Slot * slot;
 };
 
 struct Sets {
@@ -40,7 +41,6 @@ struct Cache buildCache(unsigned numsets, unsigned blocksperset, unsigned bytesp
     struct Sets create_sets;
     struct Cache cache;
     
-    std::map <uint32_t, Slot *> set;
     std::vector <struct Set> sets;
     std::vector <struct Sets> sets_list;
 
@@ -55,11 +55,10 @@ struct Cache buildCache(unsigned numsets, unsigned blocksperset, unsigned bytesp
             slot.load_ts = NULL;
             slot.access_ts = NULL;
 
-            set[offset] = &slot; //create set
+            create_set.offset = offset;
+            create_set.slot = &slot;
             offset++;//unique offset value in each set
-            create_set.set = set;
             sets.push_back(create_set); //add block (set) to sets
-            set.clear(); //empty map to use for next block
         }
         create_sets.sets = sets;
         create_sets.index = NULL; //??? is index initialized to null? 
@@ -70,6 +69,39 @@ struct Cache buildCache(unsigned numsets, unsigned blocksperset, unsigned bytesp
     cache.numsets = numsets;
     cache.blocksperset = blocksperset;
     cache.bytesperblock = bytesperblock;
+}
+
+//load direct mapping (set_length = number of blocks per each set/index)
+void load_dm(unsigned address, struct Cache cache) {
+    unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
+    unsigned index = get_index(address, cache.blocksperset, cache.numsets);
+    unsigned offset = get_offset(address, cache.blocksperset);
+    
+    std::vector <struct Sets> sets_list = cache.sets_list;
+    
+    for (auto& it : sets_list) {
+        if (it.index == index) { //found index
+            for (auto& it2 : it.sets) {
+                it2.set
+            }
+        }
+    }
+
+    //iterate through cache and set corresponding tag
+    for (auto it = sets.begin(); it != sets.end(); it++) { // go through the sets in cache
+        if (it -> first == index) { //at correct index
+            std::map <uint32_t, Slot *> slots = (*it -> second).offset;
+            for (auto it2 = slots.begin(); it2 != slots.end(); it2++) { // found the set, go through the offset in the set
+                //increment all the valid load access timestamps of slots at correct index
+                if (it2 -> first == offset) { // found the slot, now to load
+                    //if tag is null --> fill
+                    if ((*it2 -> second).tag == NULL || (*it2 -> second).tag != tag ) { //if not filled or tag doesn't match
+                        (*it2 -> second).tag = tag;
+                    }
+                }
+            }
+        }
+    }
 }
 
 unsigned get_tag(unsigned address, unsigned blocksperset, unsigned numsets) {
@@ -90,40 +122,6 @@ unsigned get_offset(unsigned address, unsigned blocksperset) {
     unsigned blockbits = log2(blocksperset) + 1;
     return address >> (32 - blocksperset);
 }
-
-
-
-//load direct mapping (set_length = number of blocks per each set/index)
-void load_dm(unsigned address, struct Cache_dm cache) {
-    unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
-    unsigned index = get_index(address, cache.blocksperset, cache.numsets);
-    unsigned offset = get_offset(address, cache.blocksperset);
-    
-    std::map <uint32_t, Set *> sets = cache.sets;
-    
-    //iterate through cache and set corresponding tag
-    for (auto it = sets.begin(); it != sets.end(); it++) { // go through the sets in cache
-        if (it -> first == index) { //at correct index
-            std::map <uint32_t, Slot *> slots = (*it -> second).offset;
-            for (auto it2 = slots.begin(); it2 != slots.end(); it2++) { // found the set, go through the offset in the set
-                //increment all the valid load access timestamps of slots at correct index
-                if (it2 -> first == offset) { // found the slot, now to load
-                    //if tag is null --> fill
-                    if ((*it2 -> second).tag == NULL || (*it2 -> second).tag != tag ) { //if not filled or tag doesn't match
-                        (*it2 -> second).tag = tag;
-                    }
-                }
-            }
-        }
-    }
-}
-
-struct Cache_fa{//fully associative
-    std::vector<std::map <uint32_t, Set *>> sets;
-    unsigned numsets;
-    unsigned blocksperset;
-    unsigned bytesperblock;
-};
 
 // memory address is tag index offset
 // given: num sets, num blocks, num bytes/ block (= block size)
