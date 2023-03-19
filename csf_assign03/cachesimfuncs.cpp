@@ -223,11 +223,9 @@ void load_fa(unsigned address, struct Cache cache) {
     std::vector <struct Sets> sets_list = cache.sets_list;
 
     bool hit = false; //cache hit checker
-    uint32_t hit_access_ts = 0;
-    uint32_t hit_load_ts = 0;
+    uint32_t hit_access_ts = 0;//access_ts holder
     
-    //check if hit
-    for (auto& it : sets_list) {
+    for (auto& it : sets_list) {//check if hit
         for (auto& it2 : it.sets) {
             if ((*it2.slot).valid && (*it2.slot).tag == tag) { //load hit
                 hit = true;
@@ -251,32 +249,38 @@ void load_fa(unsigned address, struct Cache cache) {
 
     if (!hit) {//load miss --> load in to empty slot
         for (auto& it : sets_list) {
-            if (hit) {
-                    break;
-            }
             for (auto& it2 : it.sets) {
-                if (hit) {
-                    break;
+                if ((*it2.slot).valid) { //increment load timestamp for valid blocks
+                    (*it2.slot).load_ts++;
+                    (*it2.slot).access_ts++;
                 }
-                if (!(*it2.slot).valid) { //empty
+                if (!(*it2.slot).valid && !hit) { //empty
                     (*it2.slot).tag = tag;
                     (*it2.slot).valid = true;
                     it2.offset = offset;
+                    (*it2.slot).load_ts = 0;
+                    (*it2.slot).access_ts = 0;
                     hit = true;
                 }
             }
         }
     }
 
-    //load miss and no empty slots --> LRU
-    if (!hit) {
+    if (!hit) { //load miss and no empty slots --> LRU
         //evict block --> LRU
         unsigned LRU = cache.blocksperset - 1;
         for (auto& it : sets_list) {
             for (auto& it2 : it.sets) {
-                if ((*it2.slot).valid && (*it2.slot).access_ts == LRU) { //locate LRU
+                if ((*it2.slot).valid && (*it2.slot).access_ts != LRU) { //increment non-LRU filled blocks
+                    (*it2.slot).load_ts++;
+                    (*it2.slot).access_ts++;
+                }
+                if ((*it2.slot).valid && (*it2.slot).access_ts == LRU && !hit) { //locate LRU
                     (*it2.slot).tag = tag;
                     it2.offset = offset;
+                    (*it2.slot).load_ts = 0;
+                    (*it2.slot).access_ts = 0;
+                    hit = true;
                 }
             }
         }
