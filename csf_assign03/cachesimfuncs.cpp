@@ -61,7 +61,7 @@ struct Cache buildCache(unsigned numsets, unsigned blocksperset, unsigned bytesp
             sets.push_back(create_set); //add block (set) to sets
         }
         create_sets.sets = sets;
-        create_sets.index = NULL; //??? is index initialized to null? 
+        create_sets.index = NULL; //FIX THIS*****************??? is index initialized to null? 
         sets_list.push_back(create_sets);
         sets.clear(); //empty vector to use for next block
     }
@@ -128,24 +128,24 @@ void write() {
 //     return sum;
 // }
 
-//memory address turns slot to valid
-struct Slot mem_to_slot(struct Cache cache, unsigned address, unsigned blocksize, unsigned numsetsize) {
-    struct Slot slot;
-    unsigned tag = get_tag(address, blocksize, numsetsize);
-    unsigned index = get_index(address, blocksize, numsetsize);
-    unsigned offset = get_offset(address, blocksize);
-    for (int i = 0; i < numsets; i++) {
-        std::map <uint32_t, Slot *> slots;
-        for (int j = 0; j < blocksperset; j++) {
-            struct Slot slot;
-            slot.valid = false;
-            slot.dirty = false;
-            slots[i] = slot;
-        }
-        sets[i] = slots;
-    }
+// //memory address turns slot to valid
+// struct Slot mem_to_slot(struct Cache cache, unsigned address, unsigned blocksize, unsigned numsetsize) {
+//     struct Slot slot;
+//     unsigned tag = get_tag(address, blocksize, numsetsize);
+//     unsigned index = get_index(address, blocksize, numsetsize);
+//     unsigned offset = get_offset(address, blocksize);
+//     for (int i = 0; i < numsets; i++) {
+//         std::map <uint32_t, Slot *> slots;
+//         for (int j = 0; j < blocksperset; j++) {
+//             struct Slot slot;
+//             slot.valid = false;
+//             slot.dirty = false;
+//             slots[i] = slot;
+//         }
+//         sets[i] = slots;
+//     }
 
-}
+// }
 
 // //add Slot to Set
 // void slot_to_set() {
@@ -167,7 +167,7 @@ void load_dm(unsigned address, struct Cache cache) {
     
     for (auto& it : sets_list) {
         if (it.index == index) { //found index
-            existing_ind = true;
+            //existing_ind = true;
             for (auto& it2 : it.sets) {
                 if ((*it2.slot).tag != tag) { //load miss
                     (*it2.slot).tag = tag;
@@ -176,22 +176,22 @@ void load_dm(unsigned address, struct Cache cache) {
         }
     }
 
-    //do we need this? I think so right??? do we need to do LRU on this too? 
-    if (!existing_ind) {//index does not exist --> load in 
-        for (auto& it : sets_list) {
-            for (auto& it2 : it.sets) {
-                if (!(*it2.slot).valid && !existing_ind) { //empty 
-                    (*it2.slot).tag = tag;
-                    (*it2.slot).valid = true;//filled
-                    it2.offset = offset;
-                    it.index = index;
-                    existing_ind = true;
-                    (*it2.slot).load_ts = 0;
-                    (*it2.slot).access_ts = 0;
-                }
-            }
-        }
-    }
+    // //do we need this? I think so right??? do we need to do LRU on this too? 
+    // if (!existing_ind) {//index does not exist --> load in 
+    //     for (auto& it : sets_list) {
+    //         for (auto& it2 : it.sets) {
+    //             if (!(*it2.slot).valid && !existing_ind) { //empty 
+    //                 (*it2.slot).tag = tag;
+    //                 (*it2.slot).valid = true;//filled
+    //                 it2.offset = offset;
+    //                 it.index = index;
+    //                 existing_ind = true;
+    //                 (*it2.slot).load_ts = 0;
+    //                 (*it2.slot).access_ts = 0;
+    //             }
+    //         }
+    //     }
+    // }
 
     // //iterate through cache and set corresponding tag
     // for (auto it = sets.begin(); it != sets.end(); it++) { // go through the sets in cache
@@ -292,13 +292,13 @@ void load_sa(unsigned address, struct Cache cache) {
     
     std::vector <struct Sets> sets_list = cache.sets_list;
 
-    bool existing_ind = false; //check for if index exists, if does not then needs to be added
+    //bool existing_ind = false; //check for if index exists, if does not then needs to be added
     bool hit = false;
     uint32_t hit_access_ts = 0;//access_ts holder
     
     for (auto& it : sets_list) { //n sets
         if (it.index == index) { //found index
-            existing_ind = true;
+            //existing_ind = true;
             for (auto& it2 : it.sets) { //1 block
                 if ((*it2.slot).valid && (*it2.slot).tag == tag) { //load hit
                     hit = true;
@@ -355,22 +355,22 @@ void load_sa(unsigned address, struct Cache cache) {
         }
     }
 
-    //do we need this? I think so right??? do we need to do LRU on this too? 
-    if (!existing_ind) {//index does not exist --> load in 
-        for (auto& it : sets_list) {
-            for (auto& it2 : it.sets) {
-                if (it.index == NULL && !(*it2.slot).valid && !existing_ind) { //empty 
-                    (*it2.slot).tag = tag;
-                    (*it2.slot).valid = true;//filled
-                    it2.offset = offset;
-                    it.index = index;
-                    (*it2.slot).load_ts = 0;
-                    (*it2.slot).access_ts = 0;
-                    existing_ind = true;
-                }
-            }
-        }
-    }
+    // //do we need this? I think so right??? do we need to do LRU on this too? 
+    // if (!existing_ind) {//index does not exist --> load in 
+    //     for (auto& it : sets_list) {
+    //         for (auto& it2 : it.sets) {
+    //             if (it.index == NULL && !(*it2.slot).valid && !existing_ind) { //empty 
+    //                 (*it2.slot).tag = tag;
+    //                 (*it2.slot).valid = true;//filled
+    //                 it2.offset = offset;
+    //                 it.index = index;
+    //                 (*it2.slot).load_ts = 0;
+    //                 (*it2.slot).access_ts = 0;
+    //                 existing_ind = true;
+    //             }
+    //         }
+    //     }
+    // }
 }
 
 //store (direct mapping)
