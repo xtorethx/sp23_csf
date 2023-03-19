@@ -147,13 +147,13 @@ struct Slot mem_to_slot(struct Cache cache, unsigned address, unsigned blocksize
 
 }
 
-//add Slot to Set
-void slot_to_set() {
-}
+// //add Slot to Set
+// void slot_to_set() {
+// }
 
-//add Set to Cache
-void set_to_cache() {
-}
+// //add Set to Cache
+// void set_to_cache() {
+// }
 
 //load direct mapping (set_length = number of blocks per each set/index)
 void load_dm(unsigned address, struct Cache cache) {
@@ -177,22 +177,17 @@ void load_dm(unsigned address, struct Cache cache) {
     }
 
     //do we need this? I think so right??? do we need to do LRU on this too? 
-    bool exit = false; //check to break out of loop
-
     if (!existing_ind) {//index does not exist --> load in 
         for (auto& it : sets_list) {
-            if(exit) {
-                break;
-            }
             for (auto& it2 : it.sets) {
-                if(exit) {
-                    break;
-                }
-                if (!(*it2.slot).valid) { //empty 
+                if (!(*it2.slot).valid && !existing_ind) { //empty 
                     (*it2.slot).tag = tag;
                     (*it2.slot).valid = true;//filled
+                    it2.offset = offset;
                     it.index = index;
-                    exit = true;
+                    existing_ind = true;
+                    (*it2.slot).load_ts = 0;
+                    (*it2.slot).access_ts = 0;
                 }
             }
         }
