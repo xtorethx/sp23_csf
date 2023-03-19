@@ -522,11 +522,101 @@ void store_sa(unsigned address, struct Cache cache, bool wb, bool wa) { //wb tru
     unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
     unsigned index = get_index(address, cache.blocksperset, cache.numsets);
     unsigned offset = get_offset(address, cache.blocksperset);
-
+    
     std::vector <struct Sets> sets_list = cache.sets_list;
 
-    //check if hit or miss
-    bool hit = false; //check index exists
+    //bool existing_ind = false; //check for if index exists, if does not then needs to be added
+    bool hit = false;
+    uint32_t hit_access_ts = 0;//access_ts holder
+    
+    for (auto& it : sets_list) { //n sets
+        if (it.index == index) { //found index
+            //existing_ind = true;
+            for (auto& it2 : it.sets) { //1 block
+                if ((*it2.slot).valid && (*it2.slot).tag == tag) { //load hit
+                    hit = true;
+                    hit_access_ts = (*it2.slot).access_ts; //get access timestamp of hit
+                }
+            }
+
+            if (hit) {//cache hit, update access timestamps
+                for (auto& it2 : it.sets) {
+                    if ((*it2.slot).valid && (*it2.slot).access_ts <= hit_access_ts) { 
+                        if ((*it2.slot).access_ts == hit_access_ts) {
+                            (*it2.slot).access_ts = 0; //reset most recently accessed to 0
+                            if (wb) { //write back
+                                (*it2.slot).dirty = true;
+                                //TO DO: increment write back counter; write to memory/cycle count stuff
+                            }
+                            else { //write through
+                                //TO DO: increment write through counter; write to memory/cycle count stuff
+                            }
+                        }
+                        else {
+                            (*it2.slot).access_ts++; //increment non-accessed timestamps
+                        }
+                    }
+                }
+            }
+
+            if (!hit) {//store miss 
+                if (wa) { //write allocate --> load to cache
+                    for (auto& it2 : it.sets) {
+                        if ((*it2.slot).valid) { //increment load timestamp for valid blocks
+                            (*it2.slot).load_ts++;
+                            (*it2.slot).access_ts++;
+                        }   
+                        if (!(*it2.slot).valid && !hit) {
+                            (*it2.slot).tag = tag;
+                            (*it2.slot).valid = true;
+                            it2.offset = offset;
+                            (*it2.slot).load_ts = 0;
+                            (*it2.slot).access_ts = 0;
+                            hit = true;
+                        }
+                    }
+                     if (!hit) { //store miss and no empty slots --> LRU
+                        unsigned LRU = cache.blocksperset - 1;
+                        for (auto& it2 : it.sets) {
+                            if ((*it2.slot).valid && (*it2.slot).access_ts != LRU) { //increment non-LRU filled blocks
+                                (*it2.slot).load_ts++;
+                                (*it2.slot).access_ts++;
+                            }
+                            if ((*it2.slot).valid && (*it2.slot).access_ts == LRU && !hit) { //locate LRU
+                                (*it2.slot).tag = tag;
+                                it2.offset = offset;
+                                (*it2.slot).load_ts = 0;
+                                (*it2.slot).access_ts = 0;
+                                hit = true;
+                            }
+                        }
+                    }
+                    
+                    //TO DO: increment write allocate counter; write to memory/cycle count stuff
+                }
+                else {//no write allocate
+                        //TO DO: increment no write allocate counter; write to memory/cycle count stuff
+                }
+            }
+        }
+    }
+
+    // //do we need this? I think so right??? do we need to do LRU on this too? 
+    // if (!existing_ind) {//index does not exist --> load in 
+    //     for (auto& it : sets_list) {
+    //         for (auto& it2 : it.sets) {
+    //             if (it.index == NULL && !(*it2.slot).valid && !existing_ind) { //empty 
+    //                 (*it2.slot).tag = tag;
+    //                 (*it2.slot).valid = true;//filled
+    //                 it2.offset = offset;
+    //                 it.index = index;
+    //                 (*it2.slot).load_ts = 0;
+    //                 (*it2.slot).access_ts = 0;
+    //                 existing_ind = true;
+    //             }
+    //         }
+    //     }
+    // }
 }
 
 #endif
