@@ -215,13 +215,13 @@ void load_fa(unsigned address, struct Cache cache) {
     unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
     unsigned offset = get_offset(address, cache.blocksperset);
 
-    std::vector <struct Sets> sets_list = cache.sets_list;
+    std::vector <struct Sets> sets_list = cache.sets_list; //1 set
 
     bool hit = false; //cache hit checker
     uint32_t hit_access_ts = 0;//access_ts holder
     
-    for (auto& it : sets_list) {//check if hit
-        for (auto& it2 : it.sets) {
+    for (auto& it : sets_list) {//check if hit; 1 sets
+        for (auto& it2 : it.sets) { //each sets has n blocks
             if ((*it2.slot).valid && (*it2.slot).tag == tag) { //load hit
                 hit = true;
                 hit_access_ts = (*it2.slot).access_ts; //get access timestamp of hit
@@ -236,7 +236,9 @@ void load_fa(unsigned address, struct Cache cache) {
                     if ((*it2.slot).access_ts == hit_access_ts) {
                         (*it2.slot).access_ts = 0; //reset most recently accessed to 0
                     }
-                    (*it2.slot).access_ts++; //increment non-accessed timestamps
+                    else {
+                        (*it2.slot).access_ts++; //increment non-accessed timestamps
+                    }
                 }
             }
         }
@@ -294,10 +296,10 @@ void load_sa(unsigned address, struct Cache cache) {
     bool hit = false;
     uint32_t hit_access_ts = 0;//access_ts holder
     
-    for (auto& it : sets_list) {
+    for (auto& it : sets_list) { //n sets
         if (it.index == index) { //found index
             existing_ind = true;
-            for (auto& it2 : it.sets) {
+            for (auto& it2 : it.sets) { //1 block
                 if ((*it2.slot).valid && (*it2.slot).tag == tag) { //load hit
                     hit = true;
                     hit_access_ts = (*it2.slot).access_ts; //get access timestamp of hit
@@ -308,9 +310,11 @@ void load_sa(unsigned address, struct Cache cache) {
                 for (auto& it2 : it.sets) {
                     if ((*it2.slot).valid && (*it2.slot).access_ts <= hit_access_ts) { 
                         if ((*it2.slot).access_ts == hit_access_ts) {
-                            (*it2.slot).access_ts = 0; //reset most recently accessed to 0
+                        (*it2.slot).access_ts = 0; //reset most recently accessed to 0
                         }
-                        (*it2.slot).access_ts++; //increment non-accessed timestamps
+                        else {
+                            (*it2.slot).access_ts++; //increment non-accessed timestamps
+                        }
                     }
                 }
             }
@@ -369,49 +373,160 @@ void load_sa(unsigned address, struct Cache cache) {
     }
 }
 
-//store
-void store(unsigned address, struct Cache cache, bool wt, bool wb, bool wa, bool nwa) {
-    //if hit
-    unsigned tag = get_tag(address);
-    unsigned index = get_index(address);
-    unsigned offset = get_offset(address);
-    //if hit --> do nothing
-    
-    std::map <uint32_t, Set *> sets = cache.sets;
+//store (direct mapping)
+void store_dm(unsigned address, struct Cache cache, bool wb, bool wa) { //wb true if write_back, false if write through; wa true if write_allocate, false if no write allocate
+    unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
+    unsigned index = get_index(address, cache.blocksperset, cache.numsets);
+    unsigned offset = get_offset(address, cache.blocksperset);
 
-    bool hit = false; //check index exists
-    bool val_match = false; //check if value matches (in filled slot)
+    std::vector <struct Sets> sets_list = cache.sets_list;
+
+    //bool existing_ind = false; //check for if index exists, if does not then needs to be added
+    bool cache_hit = false; 
     
-    for (auto it = sets.begin(); it != sets.end(); it++) { // go through the sets in cache
-        if (it -> first == index) { //at correct index
-            std::map <uint32_t, Slot *> slots = (*it -> second).offset;
-            for (auto it2 = slots.begin(); it2 != slots.end(); it2++) { // found the set, go through the offset in the set
-                if (it2 -> first == offset) { // found the slot, now to load
-                    //if tag is null --> fill
-                    if ((*it2 -> second).tag == tag) {//cache hit
-                        hit = true;
-                        if (wt) {
-                            //increment write-through counter
-                        }
-                        else {
-                            //increment write-back counter
-                            (*it2 -> second).dirty = true;
-                        }
+    for (auto& it : sets_list) {
+        if (it.index == index) { //found index
+            // existing_ind = true;
+            for (auto& it2 : it.sets) {
+                if ((*it2.slot).tag == tag) { //cache hit
+                    cache_hit = true;
+                    if (wb) { //write back
+                        (*it2.slot).dirty = true;
+                        //TO DO: increment write back counter; write to memory/cycle count stuff
                     }
-                    else {//cache miss
-                        if (wa) {
-                            (*it2 -> second).tag = tag
-                            //increment write-allocate counter
+                    else { //write through
+                        //TO DO: increment write through counter; write to memory/cycle count stuff
+                    }
+                }
 
-                        }
-                        else {
-                            //increment no-write-allocate counter
-                        }
+                else { //cache miss
+                    if (wa) {//write allocate
+                        (*it2.slot).tag = tag;
+                        //TO DO: increment write allocate counter; write to memory/cycle count stuff
+                    }
+                    else {//no write allocate
+                        //TO DO: increment no write allocate counter; write to memory/cycle count stuff
                     }
                 }
             }
         }
     }
+    // //do we need this? I think so right??? do we need to do LRU on this too? 
+    // if (!existing_ind) {//index does not exist --> load in 
+    //     for (auto& it : sets_list) {
+    //         for (auto& it2 : it.sets) {
+    //             if (!(*it2.slot).valid && !existing_ind) { //empty 
+    //                 (*it2.slot).tag = tag;
+    //                 (*it2.slot).valid = true;//filled
+    //                 it2.offset = offset;
+    //                 it.index = index;
+    //                 existing_ind = true;
+    //                 (*it2.slot).load_ts = 0;
+    //                 (*it2.slot).access_ts = 0;
+    //             }
+    //         }
+    //     }
+    // }
+}
+
+//store (fully associative)
+void store_fa(unsigned address, struct Cache cache, bool wb, bool wa) { //wb true if write_back, false if write through; wa true if write_allocate, false if no write allocate
+    unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
+    unsigned offset = get_offset(address, cache.blocksperset);
+
+    std::vector <struct Sets> sets_list = cache.sets_list; //1 set
+
+    bool hit = false; //cache hit checker
+    uint32_t hit_access_ts = 0;//access_ts holder
+    
+    for (auto& it : sets_list) {//check if hit; 1 sets
+        for (auto& it2 : it.sets) { //each sets has n blocks
+            if ((*it2.slot).valid && (*it2.slot).tag == tag) { //load hit
+                hit = true;
+                hit_access_ts = (*it2.slot).access_ts; //get access timestamp of hit
+            }
+        }
+    }
+
+    if (hit) {//store hit, update access timestamps
+        for (auto& it : sets_list) {
+            for (auto& it2 : it.sets) {
+                if ((*it2.slot).valid && (*it2.slot).access_ts <= hit_access_ts) { 
+                    if ((*it2.slot).access_ts == hit_access_ts) {
+                        (*it2.slot).access_ts = 0; //reset most recently accessed to 0
+                        if (wb) { //write back
+                            (*it2.slot).dirty = true;
+                            //TO DO: increment write back counter; write to memory/cycle count stuff
+                        }
+                        else { //write through
+                            //TO DO: increment write through counter; write to memory/cycle count stuff
+                        }
+                    }
+                    else {
+                        (*it2.slot).access_ts++; //increment non-accessed timestamps
+                    }
+                }
+            }
+        }
+    }
+
+    if (!hit) {//store miss
+        if (wa) { //write allocate --> load to cache
+            for (auto& it : sets_list) { //load into empty spot
+                for (auto& it2 : it.sets) {
+                    if ((*it2.slot).valid) { //increment load timestamp for valid blocks
+                        (*it2.slot).load_ts++;
+                        (*it2.slot).access_ts++;
+                    }
+                    if (!(*it2.slot).valid && !hit) { //empty
+                        (*it2.slot).tag = tag;
+                        (*it2.slot).valid = true;
+                        it2.offset = offset;
+                        (*it2.slot).load_ts = 0;
+                        (*it2.slot).access_ts = 0;
+                        hit = true;
+                    }
+                }
+            }
+
+            if (!hit) { //load miss and no empty slots --> LRU
+                //evict block --> LRU
+                unsigned LRU = cache.blocksperset - 1;
+                for (auto& it : sets_list) {
+                    for (auto& it2 : it.sets) {
+                        if ((*it2.slot).valid && (*it2.slot).access_ts != LRU) { //increment non-LRU filled blocks
+                            (*it2.slot).load_ts++;
+                            (*it2.slot).access_ts++;
+                        }
+                        if ((*it2.slot).valid && (*it2.slot).access_ts == LRU && !hit) { //locate LRU
+                            (*it2.slot).tag = tag;
+                            it2.offset = offset;
+                            (*it2.slot).load_ts = 0;
+                            (*it2.slot).access_ts = 0;
+                            hit = true;
+                        }
+                    }
+                }
+            }
+
+            //TO DO: increment write allocate counter; write to memory/cycle count stuff
+        }
+        else {//no write allocate
+            //TO DO: increment no write allocate counter; write to memory/cycle count stuff
+        }
+    }    
+}
+
+//store (set associative)
+void store_sa(unsigned address, struct Cache cache, bool wb, bool wa) { //wb true if write_back, false if write through; wa true if write_allocate, false if no write allocate
+    unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
+    unsigned index = get_index(address, cache.blocksperset, cache.numsets);
+    unsigned offset = get_offset(address, cache.blocksperset);
+
+    std::vector <struct Sets> sets_list = cache.sets_list;
+
+    //check if hit or miss
+    bool hit = false; //check index exists
 }
 
 #endif
