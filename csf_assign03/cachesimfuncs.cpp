@@ -71,50 +71,6 @@ struct Cache buildCache(unsigned numsets, unsigned blocksperset, unsigned bytesp
     cache.bytesperblock = bytesperblock;
 }
 
-//loading set associative
-void load_sa(unsigned address, struct Cache cache) {
-    unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
-    unsigned index = get_index(address, cache.blocksperset, cache.numsets);
-    unsigned offset = get_offset(address, cache.blocksperset);
-    
-    std::vector <struct Sets> sets_list = cache.sets_list;
-
-    bool existing_ind = false; //check for if index exists, if does not then needs to be added
-    
-    for (auto& it : sets_list) {
-        if (it.index == index) { //found index
-            existing_ind = true;
-            for (auto& it2 : it.sets) {
-                if ((*it2.slot).tag != tag) { //load miss
-                    (*it2.slot).tag = tag;
-                }
-            }
-        }
-    }
-
-    //do we need this? I think so right??? do we need to do LRU on this too? 
-    bool exit = false; //check to break out of loop
-
-    if (!existing_ind) {//index does not exist --> load in 
-        for (auto& it : sets_list) {
-            if(exit) {
-                break;
-            }
-            for (auto& it2 : it.sets) {
-                if(exit) {
-                    break;
-                }
-                if (!(*it2.slot).valid) { //empty 
-                    (*it2.slot).tag = tag;
-                    (*it2.slot).valid = true;//filled
-                    it.index = index;
-                    exit = true;
-                }
-            }
-        }
-    }
-}
-
 unsigned get_tag(unsigned address, unsigned blocksperset, unsigned numsets) {
     unsigned blockbits = log2(blocksperset) + 1;
     unsigned setbits = log2(numsets) + 1;
@@ -267,18 +223,41 @@ void load_fa(unsigned address, struct Cache cache) {
     std::vector <struct Sets> sets_list = cache.sets_list;
 
     bool hit = false; //cache hit checker
+    uint32_t hit_access_ts = 0;
+    uint32_t hit_load_ts = 0;
     
+    //check if hit
     for (auto& it : sets_list) {
         for (auto& it2 : it.sets) {
-            if ((*it2.slot).tag == tag) { //load hit
+            if ((*it2.slot).valid && (*it2.slot).tag == tag) { //load hit
                 hit = true;
+                hit_access_ts = (*it2.slot).access_ts; //get access timestamp of hit
+            }
+        }
+    }
+
+    if (hit) {//cache hit, update access timestamps
+        for (auto& it : sets_list) {
+            for (auto& it2 : it.sets) {
+                if ((*it2.slot).valid && (*it2.slot).access_ts <= hit_access_ts) { 
+                    if ((*it2.slot).access_ts == hit_access_ts) {
+                        (*it2.slot).access_ts = 0; //reset most recently accessed to 0
+                    }
+                    (*it2.slot).access_ts++; //increment non-accessed timestamps
+                }
             }
         }
     }
 
     if (!hit) {//load miss --> load in to empty slot
         for (auto& it : sets_list) {
+            if (hit) {
+                    break;
+            }
             for (auto& it2 : it.sets) {
+                if (hit) {
+                    break;
+                }
                 if (!(*it2.slot).valid) { //empty
                     (*it2.slot).tag = tag;
                     (*it2.slot).valid = true;
@@ -289,9 +268,71 @@ void load_fa(unsigned address, struct Cache cache) {
         }
     }
 
-    //still need condition to account for when full --> LRU
+    //load miss and no empty slots --> LRU
     if (!hit) {
         //evict block --> LRU
+        unsigned LRU = cache.blocksperset - 1;
+        for (auto& it : sets_list) {
+            for (auto& it2 : it.sets) {
+                if ((*it2.slot).valid && (*it2.slot).access_ts == LRU) { //locate LRU
+                    (*it2.slot).tag = tag;
+                    it2.offset = offset;
+                }
+            }
+        }
+    }
+}
+
+//loading set associative
+void load_sa(unsigned address, struct Cache cache) {
+    unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
+    unsigned index = get_index(address, cache.blocksperset, cache.numsets);
+    unsigned offset = get_offset(address, cache.blocksperset);
+    
+    std::vector <struct Sets> sets_list = cache.sets_list;
+
+    bool existing_ind = false; //check for if index exists, if does not then needs to be added
+    bool hit = false;
+    
+    for (auto& it : sets_list) {
+        if (it.index == index) { //found index
+            existing_ind = true;
+            for (auto& it2 : it.sets) {
+                if ((*it2.slot).tag == tag) { //load hit
+                    hit = true;
+                }
+            }
+            if (!hit) {//load miss
+                for (auto& it2 : it.sets) {
+                    if (hit/*placeholder; if timestamp matches criteria*/) {
+                        (*it2.slot).tag = tag;
+                    }
+                }
+
+            }
+        }
+    }
+
+    //do we need this? I think so right??? do we need to do LRU on this too? 
+    bool exit = false; //check to break out of loop
+
+    if (!hit) {//index does not exist --> load in 
+        for (auto& it : sets_list) {
+            if(exit) {
+                break;
+            }
+            for (auto& it2 : it.sets) {
+                if(exit) {
+                    break;
+                }
+                if (!(*it2.slot).valid) { //empty 
+                    (*it2.slot).tag = tag;
+                    (*it2.slot).valid = true;//filled
+                    it.index = index;
+                    exit = true;
+                }
+            }
+        }
     }
 }
 
