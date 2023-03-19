@@ -91,7 +91,7 @@ struct Cache buildCache(unsigned numsets, unsigned blocksperset, unsigned bytesp
     struct Cache cache;
     cache.numsets = numsets;
     cache.blocksperset = blocksperset;
-    cache.bytersperblock = bytesperblock;
+    cache.bytesperblock = bytesperblock;
     cache.sets = std::map <uint32_t, Set *> sets;
     for (int i = 0; i < numsets; i++) {
         std::map <uint32_t, Slot *> slots;
@@ -237,7 +237,7 @@ void load_fa(unsigned set_length, unsigned address, struct Cache cache) {
                 if (!(*it2 -> second).valid) {//unfilled slot 
                     struct Slot temp = *it2 -> second;
                     slots.erase(it2 -> first);
-                    slots.insert(offset, temp); //why doesn't this work im confused
+                    slots.insert({offset, temp}); //why doesn't this work im confused
 
                     // it2 -> first = offset;
                     // (*it2 -> second).tag = tag;
