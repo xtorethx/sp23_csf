@@ -10,7 +10,6 @@
 #include <cmath>
 #include "cachesimfuncs.h"
 
-//TO DO: Write Functions
 struct Slot{
     uint32_t tag;
     bool valid; // true if filled, false by default (unfilled)
@@ -71,12 +70,34 @@ struct Cache buildCache(unsigned numsets, unsigned blocksperset, unsigned bytesp
     cache.bytesperblock = bytesperblock;
 }
 
+/*
+ * Return unsigned int corresponding to tag
+ *
+ * Parameters:
+ *   address - unsigned
+ *   blocksperset - unsigned
+ *   numsets - unsigned
+ *
+ * Returns:
+ *   unsigned int
+ */
 unsigned get_tag(unsigned address, unsigned blocksperset, unsigned numsets) {
     unsigned blockbits = log2(blocksperset) + 1;
     unsigned setbits = log2(numsets) + 1;
     return address >> (blockbits + setbits);
 }
 
+/*
+ * Return unsigned int corresponding to index
+ *
+ * Parameters:
+ *   address - unsigned
+ *   blocksperset - unsigned
+ *   numsets - unsigned
+ *
+ * Returns:
+ *   unsigned int
+ */
 unsigned get_index(unsigned address, unsigned blocksperset, unsigned numsets) {
     unsigned blockbits = log2(blocksperset) + 1;
     unsigned setbits = log2(numsets) + 1;
@@ -85,22 +106,45 @@ unsigned get_index(unsigned address, unsigned blocksperset, unsigned numsets) {
     return index;
 }
 
+/*
+ * Return unsigned int corresponding to offset
+ *
+ * Parameters:
+ *   address - unsigned
+ *   blocksperset - unsigned
+ *   numsets - unsigned
+ *
+ * Returns:
+ *   unsigned int
+ */
 unsigned get_offset(unsigned address, unsigned blocksperset) {
     unsigned blockbits = log2(blocksperset) + 1;
     return address >> (32 - blocksperset);
 }
 
-// memory address is tag index offset
-// given: num sets, num blocks, num bytes/ block (= block size)
-// tag is
-//read memory access trace from standard input
+
+/*
+ * read memory access trace from standard input
+ * memory address is tag index offset
+ * given: num sets, num blocks, num bytes/ block (= block size)
+ *
+ * Parameters:
+ *   ls - char
+ *   memaddress - char array
+ *   tmp - char
+ */
 void read(char ls, char memaddress[], char tmp) {
     scanf("%c", ls);
     scanf("%10s", memaddress);
     scanf("%c", tmp);
 }
 
-//write to standard output
+/*
+ * write to standard output
+ *
+ * Parameters:
+ *   
+ */
 void write() {
 }
 
@@ -155,7 +199,14 @@ void write() {
 // void set_to_cache() {
 // }
 
-//load direct mapping (set_length = number of blocks per each set/index)
+
+/*
+ * load direct mapping (set_length = number of blocks per each set/index)
+ *
+ * Parameters:
+ *   address - unsigned
+ *   cache - Cache struct
+ */
 void load_dm(unsigned address, struct Cache cache) {
     unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
     unsigned index = get_index(address, cache.blocksperset, cache.numsets);
@@ -210,7 +261,14 @@ void load_dm(unsigned address, struct Cache cache) {
     // }
 }
 
-void update_access_ts_fa(std::vector <struct Sets> sets_list, uint32_t hit_access_ts) {//update access timestamp for fully associative structure
+/*
+ * update access timestamp for fully associative structure
+ *
+ * Parameters:
+ *   sets_list - vector of type Sets struct
+ *   hit_access_ts - uint32_t
+ */
+void update_access_ts_fa(std::vector <struct Sets> sets_list, uint32_t hit_access_ts) {
     for (auto& it : sets_list) {
         for (auto& it2 : it.sets) {
             if ((*it2.slot).valid && (*it2.slot).access_ts <= hit_access_ts) { 
@@ -225,7 +283,19 @@ void update_access_ts_fa(std::vector <struct Sets> sets_list, uint32_t hit_acces
     }
 }
 
-bool load_empty_fa(std::vector <struct Sets> sets_list, bool hit, unsigned offset, unsigned tag) {//load into empty slot for fully associative structure
+/*
+ * load into empty slot for fully associative structure, returns true if empty slot exists
+ *
+ * Parameters:
+ *   sets_list - vector of type Sets struct
+ *   hit - bool
+ *   offset - unsigned int
+ *   tag - unsigned int
+ *
+ * Returns:
+ *   bool
+ */
+bool load_empty_fa(std::vector <struct Sets> sets_list, bool hit, unsigned offset, unsigned tag) {
     for (auto& it : sets_list) {
         for (auto& it2 : it.sets) {
             if ((*it2.slot).valid) { //increment load timestamp for valid blocks
@@ -245,7 +315,17 @@ bool load_empty_fa(std::vector <struct Sets> sets_list, bool hit, unsigned offse
     return false;
 }
 
-void evict_block_LRU_fa(std::vector <struct Sets> sets_list, bool hit, unsigned offset, unsigned LRU, unsigned tag) {//evict least recently used for fully associative structure
+/*
+ * evict least recently used for fully associative structure
+ *
+ * Parameters:
+ *   sets_list - vector of type Sets struct
+ *   hit - bool
+ *   offset - unsigned int
+ *   LRU - unsigned int
+ *   tag - unsigned int
+ */
+void evict_block_LRU_fa(std::vector <struct Sets> sets_list, bool hit, unsigned offset, unsigned LRU, unsigned tag) {
     for (auto& it : sets_list) {
         for (auto& it2 : it.sets) {
             if ((*it2.slot).valid && (*it2.slot).access_ts != LRU) { //increment non-LRU filled blocks
@@ -263,7 +343,13 @@ void evict_block_LRU_fa(std::vector <struct Sets> sets_list, bool hit, unsigned 
     }
 }
 
-//loading fully associative
+/*
+ * loading fully associative
+ *
+ * Parameters:
+ *   address - unsigned int
+ *   cache - Cache struct
+ */
 void load_fa(unsigned address, struct Cache cache) {
     unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
     unsigned offset = get_offset(address, cache.blocksperset);
@@ -291,7 +377,13 @@ void load_fa(unsigned address, struct Cache cache) {
     }
 }
 
-//loading set associative
+/*
+ * loading set associative
+ *
+ * Parameters:
+ *   address - unsigned int
+ *   cache - Cache struct
+ */
 void load_sa(unsigned address, struct Cache cache) {
     unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
     unsigned index = get_index(address, cache.blocksperset, cache.numsets);
@@ -380,8 +472,17 @@ void load_sa(unsigned address, struct Cache cache) {
     // }
 }
 
-//store (direct mapping)
-void store_dm(unsigned address, struct Cache cache, bool wb, bool wa) { //wb true if write_back, false if write through; wa true if write_allocate, false if no write allocate
+/*
+ * direct mapping store
+ * wb true if write_back, false if write through; wa true if write_allocate, false if no write allocate
+ *
+ * Parameters:
+ *   address - unsigned int
+ *   cache - Cache struct
+ *   wb - bool
+ *   wa - bool
+ */
+void store_dm(unsigned address, struct Cache cache, bool wb, bool wa) { 
     unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
     unsigned index = get_index(address, cache.blocksperset, cache.numsets);
     unsigned offset = get_offset(address, cache.blocksperset);
@@ -432,6 +533,14 @@ void store_dm(unsigned address, struct Cache cache, bool wb, bool wa) { //wb tru
     // }
 }
 
+/*
+ * update access timestamp and write hit behavior for fully associative
+ *
+ * Parameters:
+ *   sets_list - vector of Sets struct
+ *   hit_access_ts - uint32_t
+ *   wb - bool
+ */
 void update_access_ts_write_fa(std::vector <struct Sets> sets_list, uint32_t hit_access_ts, bool wb) {
     for (auto& it : sets_list) {
         for (auto& it2 : it.sets) {
@@ -454,8 +563,17 @@ void update_access_ts_write_fa(std::vector <struct Sets> sets_list, uint32_t hit
     }
 }
 
-//store (fully associative)
-void store_fa(unsigned address, struct Cache cache, bool wb, bool wa) { //wb true if write_back, false if write through; wa true if write_allocate, false if no write allocate
+/*
+ * storing fully associative cache
+ * wb true if write_back, false if write through; wa true if write_allocate, false if no write allocate
+ *
+ * Parameters:
+ *   address - unsigned int
+ *   cache - Cache struct
+ *   wb - bool
+ *   wa - bool
+ */
+void store_fa(unsigned address, struct Cache cache, bool wb, bool wa) { 
     unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
     unsigned offset = get_offset(address, cache.blocksperset);
     std::vector <struct Sets> sets_list = cache.sets_list; //1 set
@@ -488,8 +606,17 @@ void store_fa(unsigned address, struct Cache cache, bool wb, bool wa) { //wb tru
     }    
 }
 
-//store (set associative)
-void store_sa(unsigned address, struct Cache cache, bool wb, bool wa) { //wb true if write_back, false if write through; wa true if write_allocate, false if no write allocate
+/*
+ * storing set associative cache
+ * wb true if write_back, false if write through; wa true if write_allocate, false if no write allocate
+ *
+ * Parameters:
+ *   address - unsigned int
+ *   cache - Cache struct
+ *   wb - bool
+ *   wa - bool
+ */
+void store_sa(unsigned address, struct Cache cache, bool wb, bool wa) { 
     unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
     unsigned index = get_index(address, cache.blocksperset, cache.numsets);
     unsigned offset = get_offset(address, cache.blocksperset);
