@@ -78,6 +78,8 @@ struct Cache buildCache(unsigned numsets, unsigned blocksperset, unsigned bytesp
     cache.load_misses = 0;
     cache.store_hits = 0;
     cache.total_cycles = 0;
+
+    return cache;
 }
 
 /*
@@ -179,6 +181,7 @@ int hexchar_to_int(char hex) {
             return i;
         }
     }
+    return 0;
 }
 
 //hex to dec function 

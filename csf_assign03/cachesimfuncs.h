@@ -52,7 +52,7 @@ int read(struct Cache cache, char ls, char memaddress[], char tmp);
 
 void write(struct Cache cache);
 
-unsigned hex_to_dec(char hex_unformated[])
+unsigned hex_to_dec(char hex_unformated[]);
 
 void load_dm(unsigned address, struct Cache cache);
 

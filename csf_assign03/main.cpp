@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
     if (store_hit == "write-back") {
         wb = true;
     } else {
-        wb = false
+        wb = false;
     }
 
     if (store_miss == "write-allocate") {
