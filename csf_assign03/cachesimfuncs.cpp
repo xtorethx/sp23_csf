@@ -51,8 +51,6 @@ struct Cache buildCache(unsigned numsets, unsigned blocksperset, unsigned bytesp
     std::vector <struct Sets> sets_list;
 
     for (int i = 0; i < numsets; i++) { //initialize each set
-        uint32_t offset = 0;
-
         for (int j = 0; j < blocksperset; j++) { //initialize blocks in each set
             //initializing a slot
             slot.valid = false;
@@ -61,13 +59,12 @@ struct Cache buildCache(unsigned numsets, unsigned blocksperset, unsigned bytesp
             slot.load_ts = NULL;
             slot.access_ts = NULL;
 
-            create_set.offset = offset;
+            create_set.offset = j;
             create_set.slot = &slot;
-            offset++;//unique offset value in each set
             sets.push_back(create_set); //add block (set) to sets
         }
         create_sets.sets = sets;
-        create_sets.index = NULL; //FIX THIS*****************??? is index initialized to null? 
+        create_sets.index = i; 
         sets_list.push_back(create_sets);
         sets.clear(); //empty vector to use for next block
     }
@@ -78,7 +75,7 @@ struct Cache buildCache(unsigned numsets, unsigned blocksperset, unsigned bytesp
     cache.total_loads = 0;
     cache.total_stores = 0;
     cache.load_hits = 0;
-    cache.load_missed = 0;
+    cache.load_misses = 0;
     cache.store_hits = 0;
     cache.total_cycles = 0;
 }
