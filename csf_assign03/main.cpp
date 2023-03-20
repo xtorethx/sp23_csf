@@ -32,11 +32,6 @@ int main(int argc, char** argv) {
     std::string store_hit;
     std::string evict_alg;
 
-    //arguments
-    std::getline(std::cin, store_miss);
-    std::getline(std::cin, store_hit);
-    std::getline(std::cin, evict_alg);
-
     numsets = stoi(argv[1]);
     blocksperset = stoi(argv[2]);
     bytesperblock = stoi(argv[3]);
