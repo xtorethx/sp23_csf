@@ -163,7 +163,14 @@ void read(struct Cache cache, char ls, char memaddress[], char tmp) {
  * Parameters:
  *   
  */
-void write() {
+void write(struct Cache cache) {
+    std::cout << "Total loads: " << cache.total_loads << std::endl;
+    std::cout << "Total stores: " << cache.total_stores << std::endl;
+    std::cout << "Load hits: " << cache.load_hits << std::endl;
+    std::cout << "Load misses: " << cache.load_misses << std::endl;
+    std::cout << "Store hits: " << cache.store_hits << std::endl;
+    std::cout << "Store misses: " << cache.store_misses << std::endl;
+    std::cout << "Total cycles: " << cache.total_cycles << std::endl;
 }
 
 // //char to int helper function
