@@ -35,7 +35,7 @@ struct Cache{
     unsigned total_loads;
     unsigned total_stores;
     unsigned load_hits;
-    unsigned load_missed;
+    unsigned load_misses;
     unsigned store_hits;
     unsigned store_misses;
     unsigned total_cycles;
@@ -240,9 +240,11 @@ void load_dm(unsigned address, struct Cache cache) {
             for (auto& it2 : it.sets) {
                 if ((*it2.slot).tag != tag) { //load miss
                     (*it2.slot).tag = tag;
-                    cache.load_missed++;
+                    cache.load_misses++;
+                    cache.total_cycles = cache.total_cycles + (4/cache.bytesperblock) * 100;
                 } else {
                     cache.load_hits++;
+                    cache.total_cycles++;
                 }
             }
         }
@@ -289,8 +291,7 @@ void load_dm(unsigned address, struct Cache cache) {
  *   sets_list - vector of type Sets struct
  *   hit_access_ts - uint32_t
  */
-void update_access_ts_fa(struct Cache cache, uint32_t hit_access_ts) {
-    sets_list = cache.sets_list;
+void update_access_ts_fa(std::vector <struct Sets> sets_list, uint32_t hit_access_ts) {
     for (auto& it : sets_list) {
         for (auto& it2 : it.sets) {
             if ((*it2.slot).valid && (*it2.slot).access_ts <= hit_access_ts) { 
@@ -388,14 +389,19 @@ void load_fa(unsigned address, struct Cache cache) {
     }
     if (hit) {//cache hit, update access timestamps
         update_access_ts_fa(sets_list, hit_access_ts);
+        cache.load_hits++;
+        cache.total_cycles++;
     }
     if (!hit) {//load miss --> load in to empty slot
         hit = load_empty_fa(sets_list, hit, offset, tag);
+        cache.load_misses++;
+        cache.total_cycles = cache.total_cycles + (4/cache.bytesperblock) * 100;
     }
     if (!hit) { //load miss and no empty slots --> LRU
         //evict block --> LRU
         unsigned LRU = cache.blocksperset - 1;
         evict_block_LRU_fa(sets_list, hit, offset, LRU, tag);
+        cache.total_cycles = cache.total_cycles + (4/cache.bytesperblock) * 100;
     }
 }
 
@@ -438,6 +444,8 @@ void load_sa(unsigned address, struct Cache cache) {
                         }
                     }
                 }
+                cache.load_hits++;
+                cache.total_cycles++;
             }
 
             if (!hit) {//load miss --> load into empty slot
@@ -455,6 +463,8 @@ void load_sa(unsigned address, struct Cache cache) {
                         hit = true;
                     }
                 }
+                cache.load_misses++;
+                cache.total_cycles = cache.total_cycles + (4/cache.bytesperblock) * 100;
             }
 
             if (!hit) { //load miss and no empty slots --> LRU
@@ -472,6 +482,7 @@ void load_sa(unsigned address, struct Cache cache) {
                         hit = true;
                     }
                 }
+                cache.total_cycles = cache.total_cycles + (4/cache.bytesperblock) * 100;
             }
         }
     }
@@ -517,6 +528,8 @@ void store_dm(unsigned address, struct Cache cache, bool wb, bool wa) {
             for (auto& it2 : it.sets) {
                 if ((*it2.slot).tag == tag) { //cache hit
                     cache_hit = true;
+                    cache.store_hits++;
+                    cache.total_cycles++;
                     if (wb) { //write back
                         (*it2.slot).dirty = true;
                         //TO DO: increment write back counter; write to memory/cycle count stuff
@@ -526,8 +539,10 @@ void store_dm(unsigned address, struct Cache cache, bool wb, bool wa) {
                     }
                 }
                 else { //cache miss
+                    cache.store_misses++;    
                     if (wa) {//write allocate
                         (*it2.slot).tag = tag;
+                        cache.total_cycles = cache.total_cycles + (4/cache.bytesperblock) * 100;
                         //TO DO: increment write allocate counter; write to memory/cycle count stuff
                     }
                     else {//no write allocate
@@ -611,9 +626,13 @@ void store_fa(unsigned address, struct Cache cache, bool wb, bool wa) {
     }
     if (hit) {//store hit, update access timestamps
         update_access_ts_write_fa(sets_list, hit_access_ts, wb);
+        cache.store_hits++;
+        cache.total_cycles++;
     }
     if (!hit) {//store miss
         if (wa) { //write allocate --> load to cache
+            cache.store_misses++;
+            cache.total_cycles = cache.total_cycles + (4/cache.bytesperblock) * 100;
             hit = load_empty_fa(sets_list, hit, offset, tag);
             if (!hit) { //load miss and no empty slots --> LRU
                 //evict block --> LRU
