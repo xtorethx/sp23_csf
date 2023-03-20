@@ -37,9 +37,9 @@ int main(int argc, char** argv) {
     std::getline(std::cin, store_hit);
     std::getline(std::cin, evict_alg);
 
-    numsets = atoi(argv[1]);
-    blocksperset = atoi(argv[2]);
-    bytesperblock = atoi(argv[3]);
+    numsets = stoi(argv[1]);
+    blocksperset = stoi(argv[2]);
+    bytesperblock = stoi(argv[3]);
     store_miss = argv[4];
     store_hit = argv[5];
     evict_alg = argv[7];
@@ -85,15 +85,11 @@ int main(int argc, char** argv) {
 
     struct Cache cache = buildCache(numsets, blocksperset, bytesperblock);
 
-    char ls;
+    char ls = '0';
     char memaddress[11];
-    char tmp;
-    int loads = 0;
-    int i = 0;
+    char tmp = '0';
 
-    read(cache, ls, memaddress, tmp);
-
-    while (i != EOF) {
+    while (read(cache, ls, memaddress, tmp) != EOF) {
         unsigned address =  hex_to_dec(memaddress);
         if (ls == 'l') {
             if (blocksperset == 1) {
@@ -112,7 +108,6 @@ int main(int argc, char** argv) {
                 store_sa(address, cache, wb, wa);
             }
         }
-        int i = read(cache, ls, memaddress, tmp);
     }
 
     write(cache);
