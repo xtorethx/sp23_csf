@@ -29,9 +29,16 @@ struct Sets {
 
 struct Cache{
     std::vector <struct Sets> sets_list; // list of sets, each set corresponds to one index
-    unsigned numsets;
-    unsigned blocksperset;
-    unsigned bytesperblock;
+    unsigned numsets; // first param
+    unsigned blocksperset; // second param
+    unsigned bytesperblock; // third param
+    unsigned total_loads;
+    unsigned total_stores;
+    unsigned load_hits;
+    unsigned load_missed;
+    unsigned store_hits;
+    unsigned store_misses;
+    unsigned total_cycles;
 };
 
 struct Cache buildCache(unsigned numsets, unsigned blocksperset, unsigned bytesperblock) {
@@ -68,6 +75,12 @@ struct Cache buildCache(unsigned numsets, unsigned blocksperset, unsigned bytesp
     cache.numsets = numsets;
     cache.blocksperset = blocksperset;
     cache.bytesperblock = bytesperblock;
+    cache.total_loads = 0;
+    cache.total_stores = 0;
+    cache.load_hits = 0;
+    cache.load_missed = 0;
+    cache.store_hits = 0;
+    cache.total_cycles = 0;
 }
 
 /*
@@ -133,10 +146,15 @@ unsigned get_offset(unsigned address, unsigned blocksperset) {
  *   memaddress - char array
  *   tmp - char
  */
-void read(char ls, char memaddress[], char tmp) {
-    scanf("%c", ls);
+void read(struct Cache cache, char ls, char memaddress[], char tmp) {
+    scanf(" %c", &ls);
     scanf("%10s", memaddress);
-    scanf("%c", tmp);
+    scanf(" %c", &tmp);
+    if (ls == 'l') {
+        cache.total_loads++;
+    } else {
+        cache.total_stores++;
+    }
 }
 
 /*
@@ -222,6 +240,9 @@ void load_dm(unsigned address, struct Cache cache) {
             for (auto& it2 : it.sets) {
                 if ((*it2.slot).tag != tag) { //load miss
                     (*it2.slot).tag = tag;
+                    cache.load_missed++;
+                } else {
+                    cache.load_hits++;
                 }
             }
         }
@@ -268,7 +289,8 @@ void load_dm(unsigned address, struct Cache cache) {
  *   sets_list - vector of type Sets struct
  *   hit_access_ts - uint32_t
  */
-void update_access_ts_fa(std::vector <struct Sets> sets_list, uint32_t hit_access_ts) {
+void update_access_ts_fa(struct Cache cache, uint32_t hit_access_ts) {
+    sets_list = cache.sets_list;
     for (auto& it : sets_list) {
         for (auto& it2 : it.sets) {
             if ((*it2.slot).valid && (*it2.slot).access_ts <= hit_access_ts) { 

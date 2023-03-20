@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "cachesimfuncs.h"
+#include <cstdlib>
 #include "cachesimfuncs.h"
 
 using namespace std;
@@ -25,8 +25,8 @@ void show_commands() {
 }
 
 int main(int argc, char** argv) {
-    unsigned numsets = argv[1];
-    unsigned blocksperset = argv[2];
-    unsigned bytesperblock = argv[3];
+    unsigned numsets = atoi(argv[1]);
+    unsigned blocksperset = atoi(argv[2]);
+    unsigned bytesperblock = atoi(argv[3]);
     struct Cache cache = buildCache(numsets, blocksperset, bytesperblock);
 }
