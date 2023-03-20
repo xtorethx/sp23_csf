@@ -25,8 +25,42 @@ void show_commands() {
 }
 
 int main(int argc, char** argv) {
-    unsigned numsets = atoi(argv[1]);
-    unsigned blocksperset = atoi(argv[2]);
-    unsigned bytesperblock = atoi(argv[3]);
+    unsigned numsets;
+    unsigned blocksperset;
+    unsigned bytesperblock;
+    std::string store_miss;
+    std::string store_hit;
+    std::string evict_alg;
+
+    //read in standard input
+    std::cin >> numsets;
+    std::cin >> blocksperset;
+    std::cin >> bytesperblock;
+    std::getline(std::cin, store_miss);
+    std::getline(std::cin, store_hit);
+    std::getline(std::cin, evict_alg);
+
+    //throw errors
+    //block size is not a power of 2
+    if (!((bytesperblock != 0) && ((bytesperblock & (bytesperblock - 1)) == 0))) {
+        std::cerr << "block size is not a power of 2\n";
+        return 1;
+    }
+    //number of sets is not a power of 2
+    if (!((numsets != 0) && ((numsets & (numsets - 1)) == 0))) {
+        std::cerr << "number of sets is not a power of 2\n";
+        return 1;
+    }
+    //block size is less than 4
+    if (bytesperblock < 4) {
+        std::cerr << "block size is less than 4\n";
+        return 1;
+    }
+    //write-back and no-write allocate were both specified
+    if (store_hit == "write-back" && store_miss == "no-write-allocate") {
+        std::cerr << "write-back and no-write allocate were both specified\n";
+        return 1;
+    }
+
     struct Cache cache = buildCache(numsets, blocksperset, bytesperblock);
 }
