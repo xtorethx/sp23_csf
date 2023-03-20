@@ -32,14 +32,35 @@ int main(int argc, char** argv) {
     std::string store_hit;
     std::string evict_alg;
 
-    //read in standard input
-    std::cin >> numsets;
-    std::cin >> blocksperset;
-    std::cin >> bytesperblock;
+    //arguments
     std::getline(std::cin, store_miss);
     std::getline(std::cin, store_hit);
     std::getline(std::cin, evict_alg);
 
+    numsets = atoi(argv[1]);
+    blocksperset = atoi(argv[2]);
+    bytesperblock = atoi(argv[3]);
+    store_miss = argv[4];
+    store_hit = argv[5];
+    evict_alg = argv[7];
+
+    bool wb;
+    bool wa;
+    if (store_hit == "write-back") {
+        wb = true;
+    } else {
+        wb = false
+    }
+
+    if (store_miss == "write-allocate") {
+        wa = true;
+    } else {
+        wa = false;
+    }
+    if (argc != 7) {
+        std::cerr << "Wrong number of inputs\n";
+        return 1;
+    }
     //throw errors
     //block size is not a power of 2
     if (!((bytesperblock != 0) && ((bytesperblock & (bytesperblock - 1)) == 0))) {
@@ -63,4 +84,36 @@ int main(int argc, char** argv) {
     }
 
     struct Cache cache = buildCache(numsets, blocksperset, bytesperblock);
+
+    char ls;
+    char memaddress[11];
+    char tmp;
+    int loads = 0;
+    int i = 0;
+
+    read(cache, ls, memaddress, tmp);
+
+    while (i != EOF) {
+        unsigned address =  hex_to_dec(memaddress);
+        if (ls == 'l') {
+            if (blocksperset == 1) {
+                load_dm(address, cache);
+            } else if (numsets == 1) {
+                load_fa(address, cache);
+            } else {
+                load_sa(address, cache);
+            }
+        } else if (ls == 's') {
+            if (blocksperset == 1) {
+                store_dm(address, cache, wb, wa);
+            } else if (numsets == 1) {
+                store_fa(address, cache, wb, wa);
+            } else {
+                store_sa(address, cache, wb, wa);
+            }
+        }
+        int i = read(cache, ls, memaddress, tmp);
+    }
+
+    write(cache);
 }

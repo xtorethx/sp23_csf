@@ -48,9 +48,11 @@ unsigned get_index(unsigned address, unsigned blocksperset, unsigned numsets);
 
 unsigned get_offset(unsigned address, unsigned blocksperset);
 
-void read(struct Cache cache, char ls, char memaddress[], char tmp);
+int read(struct Cache cache, char ls, char memaddress[], char tmp);
 
 void write(struct Cache cache);
+
+unsigned hex_to_dec(char hex_unformated[])
 
 void load_dm(unsigned address, struct Cache cache);
 

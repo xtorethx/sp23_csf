@@ -143,8 +143,8 @@ unsigned get_offset(unsigned address, unsigned blocksperset) {
  *   memaddress - char array
  *   tmp - char
  */
-void read(struct Cache cache, char ls, char memaddress[], char tmp) {
-    scanf(" %c", &ls);
+int read(struct Cache cache, char ls, char memaddress[], char tmp) {
+    int i = scanf(" %c", &ls);
     scanf("%10s", memaddress);
     scanf(" %c", &tmp);
     if (ls == 'l') {
@@ -152,6 +152,7 @@ void read(struct Cache cache, char ls, char memaddress[], char tmp) {
     } else {
         cache.total_stores++;
     }
+    return i;
 }
 
 /*
@@ -170,29 +171,33 @@ void write(struct Cache cache) {
     std::cout << "Total cycles: " << cache.total_cycles << std::endl;
 }
 
-// //char to int helper function
-// int hexchar_to_int(char hex) {
-//     char hexchar[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
-//     for (int i = 0; i < 16; i++) {
-//         if (hexchar[i] == hex) {
-//             return i;
-//         }
-//     }
-// }
+//char to int helper function
+int hexchar_to_int(char hex) {
+    char hexchar[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+    for (int i = 0; i < 16; i++) {
+        if (hexchar[i] == hex) {
+            return i;
+        }
+    }
+}
 
-// //hex to dec function 
-// unsigned hex_to_dec(char hex[]) {
-//     unsigned sum;
-//     for (int i = 0; i < 8; i++) {
-//         unsigned prod = 1;
-//         for (int j = 7-i; j >0; j--) {
-//             prod *= 16;
-//         }
-//         prod *= hexchar_to_int(hex[i]);
-//         sum += prod;
-//     }
-//     return sum;
-// }
+//hex to dec function 
+unsigned hex_to_dec(char hex_unformated[]) {
+    char hex[8];
+    for (int i = 2; i < 10; i++) {
+        hex[i-2] = hex_unformated[i];
+    }
+    unsigned sum;
+    for (int i = 0; i < 8; i++) {
+        unsigned prod = 1;
+        for (int j = 7-i; j >0; j--) {
+            prod *= 16;
+        }
+        prod *= hexchar_to_int(hex[i]);
+        sum += prod;
+    }
+    return sum;
+}
 
 // //memory address turns slot to valid
 // struct Slot mem_to_slot(struct Cache cache, unsigned address, unsigned blocksize, unsigned numsetsize) {
