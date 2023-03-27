@@ -175,7 +175,7 @@ void write(struct Cache cache) {
 
 //char to int helper function
 int hexchar_to_int(char hex) {
-    char hexchar[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+    char hexchar[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
     for (int i = 0; i < 16; i++) {
         if (hexchar[i] == hex) {
             return i;
@@ -190,7 +190,7 @@ unsigned hex_to_dec(char hex_unformated[]) {
     for (int i = 2; i < 10; i++) {
         hex[i-2] = hex_unformated[i];
     }
-    unsigned sum;
+    unsigned sum = 0;
     for (int i = 0; i < 8; i++) {
         unsigned prod = 1;
         for (int j = 7-i; j >0; j--) {

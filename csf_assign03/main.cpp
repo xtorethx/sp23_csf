@@ -28,16 +28,22 @@ int main(int argc, char** argv) {
     unsigned numsets;
     unsigned blocksperset;
     unsigned bytesperblock;
+
     std::string store_miss;
     std::string store_hit;
     std::string evict_alg;
-
+    //error checking for if command line has correct number of arguments (7)
+    if (argc != 7) {
+        std::cerr << "Wrong number of inputs\n";
+        return 1;
+    }
+    
     numsets = stoi(argv[1]);
     blocksperset = stoi(argv[2]);
     bytesperblock = stoi(argv[3]);
     store_miss = argv[4];
     store_hit = argv[5];
-    evict_alg = argv[7];
+    evict_alg = argv[6];
 
     bool wb;
     bool wa;
@@ -52,10 +58,8 @@ int main(int argc, char** argv) {
     } else {
         wa = false;
     }
-    if (argc != 7) {
-        std::cerr << "Wrong number of inputs\n";
-        return 1;
-    }
+
+    
     //throw errors
     //block size is not a power of 2
     if (!((bytesperblock != 0) && ((bytesperblock & (bytesperblock - 1)) == 0))) {
