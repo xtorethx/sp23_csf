@@ -16,14 +16,15 @@ struct Slot{
     bool dirty;
 };
 
-struct Set{
+struct Block{
     uint32_t offset;
     Slot * slot;
 };
 
 struct Sets {
-    std::vector <struct Set> sets; //in direct mapping/fully associative, size of 1 
+    std::vector <struct Block> blocks; //in direct mapping/fully associative, size of 1 
     uint32_t index; //non-applicable in fully associative
+    uint32_t filled; //number of valid blocks in set
 };
 
 struct Cache{
@@ -48,31 +49,31 @@ unsigned get_index(unsigned address, unsigned blocksperset, unsigned numsets);
 
 unsigned get_offset(unsigned address, unsigned blocksperset);
 
-int read(struct Cache &cache, char ls, char memaddress[], char tmp);
+int read(struct Cache &cache, char &ls, char memaddress[], char &tmp);
 
 void write(struct Cache cache);
 
 unsigned hex_to_dec(char hex_unformated[]);
 
-void load_dm(unsigned address, struct Cache &cache);
+void load(unsigned address, struct Cache &cache);
 
-void update_access_ts_fa(std::vector <struct Sets> &sets_list, uint32_t hit_access_ts);
+void update_access_ts(std::vector <struct Sets> &sets_list, uint32_t hit_access_ts, bool store, bool wb);
 
-bool load_empty_fa(std::vector <struct Sets> &sets_list, bool hit, unsigned offset, unsigned tag);
+// bool load_empty_fa(std::vector <struct Sets> &sets_list, bool hit, unsigned offset, unsigned tag);
 
-void evict_block_LRU_fa(std::vector <struct Sets> &sets_list, bool hit, unsigned offset, unsigned LRU, unsigned tag);
+void evict_block_LRU(std::vector <struct Sets> &sets_list, bool hit, unsigned offset, unsigned LRU, unsigned tag);
 
-void load_fa(unsigned address, struct Cache &cache);
+// void load_fa(unsigned address, struct Cache &cache);
 
-void load_sa(unsigned address, struct Cache &cache);
+// void load_sa(unsigned address, struct Cache &cache);
 
-void store_dm(unsigned address, struct Cache &cache, bool wb, bool wa);
+void store(unsigned address, struct Cache &cache, bool wb, bool wa);
 
-void update_access_ts_write_fa(std::vector <struct Sets> &sets_list, uint32_t hit_access_ts, bool wb);
+//void update_access_ts_write_fa(std::vector <struct Sets> &sets_list, uint32_t hit_access_ts, bool wb);
 
-void store_fa(unsigned address, struct Cache &cache, bool wb, bool wa);
+// void store_fa(unsigned address, struct Cache &cache, bool wb, bool wa);
 
-void store_sa(unsigned address, struct Cache &cache, bool wb, bool wa);
+// void store_sa(unsigned address, struct Cache &cache, bool wb, bool wa);
 
 
 #endif

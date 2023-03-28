@@ -80,28 +80,17 @@ int main(int argc, char** argv) {
 
     struct Cache cache = buildCache(numsets, blocksperset, bytesperblock);
 
-    char ls = '0';
+    char ls;
     char memaddress[11];
-    char tmp = '0';
+    char tmp;
 
     while (read(cache, ls, memaddress, tmp) != EOF) {
         unsigned address =  hex_to_dec(memaddress);
+        std::cout << cache.total_loads << std::endl;
         if (ls == 'l') {
-            if (blocksperset == 1) {
-                load_dm(address, cache);
-            } else if (numsets == 1) {
-                load_fa(address, cache);
-            } else {
-                load_sa(address, cache);
-            }
+            load(address, cache);
         } else if (ls == 's') {
-            if (blocksperset == 1) {
-                store_dm(address, cache, wb, wa);
-            } else if (numsets == 1) {
-                store_fa(address, cache, wb, wa);
-            } else {
-                store_sa(address, cache, wb, wa);
-            }
+            store(address, cache, wb, wa);
         }
     }
 
