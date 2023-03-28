@@ -82,11 +82,10 @@ int main(int argc, char** argv) {
 
     char ls;
     char memaddress[11];
-    char tmp;
+    char tmp[10];
 
-    while (read(cache, ls, memaddress, tmp) != EOF) {
+    while (read(cache, ls, memaddress, tmp) != -1) {
         unsigned address =  hex_to_dec(memaddress);
-        std::cout << cache.total_loads << std::endl;
         if (ls == 'l') {
             load(address, cache);
         } else if (ls == 's') {

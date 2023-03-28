@@ -147,16 +147,18 @@ unsigned get_offset(unsigned address, unsigned blocksperset) {
  *   memaddress - char array
  *   tmp - char
  */
-int read(struct Cache &cache, char &ls, char memaddress[], char &tmp) {
-    int i = scanf(" %c", &ls);
+int read(struct Cache &cache, char &ls, char memaddress[], char tmp[]) {
+    if (scanf(" %c", &ls) == EOF) {
+        return -1;
+    }
     scanf("%10s", memaddress);
-    scanf(" %c", &tmp);
+    scanf(" %s", tmp);
     if (ls == 'l') {
         cache.total_loads++;
     } else if (ls == 's') {
         cache.total_stores++;
     }
-    return i;
+    return 0;
 }
 
 /*
