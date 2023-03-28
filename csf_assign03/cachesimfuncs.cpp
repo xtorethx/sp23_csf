@@ -529,7 +529,7 @@ void store(unsigned address, struct Cache &cache, bool wb, bool wa) {
                     }
                 }
                 if (hit) {
-                    update_access_ts(block_list, hit_access_ts, true, wb);
+                    update_access_ts(index, block_list, hit_access_ts, true, wb);
                     cache.store_hits++;
                     cache.total_cycles++;
                 }

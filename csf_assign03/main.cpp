@@ -83,15 +83,16 @@ int main(int argc, char** argv) {
     char ls;
     char memaddress[11];
     char tmp[10];
-
+    int i = 0;
     while (read(cache, ls, memaddress, tmp) != -1) {
         unsigned address =  hex_to_dec(memaddress);
         if (ls == 'l') {
             load(address, cache);
+            i++;
         } else if (ls == 's') {
             store(address, cache, wb, wa);
         }
     }
-
+     std::cout << "loads: " << i << std::endl;
     write(cache);
 }
