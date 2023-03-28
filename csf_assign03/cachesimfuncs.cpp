@@ -303,12 +303,12 @@ void load(unsigned address, struct Cache &cache) {
 
             if (!hit) {//iterated through cache and could not find, load miss 
                 cache.load_misses++;
-                cache.total_cycles = cache.total_cycles + (4/cache.bytesperblock) * 100;
+                cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100;
 
                 if (it.filled == cache.blocksperset) {//no more empty spots, evict
                     unsigned LRU = cache.blocksperset - 1;
                     evict_block_LRU(index, block_list, hit, offset, LRU, tag);
-                    cache.total_cycles = cache.total_cycles + (4/cache.bytesperblock) * 100;
+                    cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100;
                 }
 
                 else {//empty spot exists, find and fill
@@ -518,8 +518,6 @@ void store(unsigned address, struct Cache &cache, bool wb, bool wa) {
                 if ((*it2.slot).valid && (*it2.slot).tag == tag) { //cache hit
                     hit = true;
                     hit_access_ts = (*it2.slot).access_ts; //get access timestamp of hit
-                    cache.store_hits++;
-                    cache.total_cycles++;
                     if (wb) { //write back
                         (*it2.slot).dirty = true;
                         //TO DO: increment write back counter; write to memory/cycle count stuff
@@ -537,7 +535,7 @@ void store(unsigned address, struct Cache &cache, bool wb, bool wa) {
                     cache.store_misses++;    
                     if (wa) {//write allocate
                         (*it2.slot).tag = tag;
-                        cache.total_cycles = cache.total_cycles + (4/cache.bytesperblock) * 100;
+                        cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100;
                         load(address, cache);
                         //TO DO: increment write allocate counter; write to memory/cycle count stuff
                     }
