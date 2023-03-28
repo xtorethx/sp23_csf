@@ -213,24 +213,26 @@ unsigned hex_to_dec(char hex_unformated[]) {
  *   sets_list - vector of type Sets struct
  *   hit_access_ts - uint32_t
  */
-void update_access_ts(std::vector <struct Sets> sets_list, uint32_t hit_access_ts, bool store, bool wb) {
+void update_access_ts(unsigned index, std::vector <struct Sets> sets_list, uint32_t hit_access_ts, bool store, bool wb) {
     for (auto& it : sets_list) {
-        for (auto& it2 : it.blocks) {
-            if ((*it2.slot).valid && (*it2.slot).access_ts <= hit_access_ts) { 
-                if ((*it2.slot).access_ts == hit_access_ts) {
-                    (*it2.slot).access_ts = 0; //reset most recently accessed to 0
-                        if (store) {
-                            if (wb) { //write back
-                            (*it2.slot).dirty = true;
-                            //TO DO: increment write back counter; write to memory/cycle count stuff
-                        }
-                        else { //write through
-                            //TO DO: increment write through counter; write to memory/cycle count stuff
+        if (it.index == index){
+            for (auto& it2 : it.blocks) {
+                if ((*it2.slot).valid && (*it2.slot).access_ts <= hit_access_ts) { 
+                    if ((*it2.slot).access_ts == hit_access_ts) {
+                        (*it2.slot).access_ts = 0; //reset most recently accessed to 0
+                            if (store) {
+                                if (wb) { //write back
+                                (*it2.slot).dirty = true;
+                                //TO DO: increment write back counter; write to memory/cycle count stuff
+                            }
+                            else { //write through
+                                //TO DO: increment write through counter; write to memory/cycle count stuff
+                            }
                         }
                     }
-                }
-                else {
-                    (*it2.slot).access_ts++; //increment non-accessed timestamps
+                    else {
+                        (*it2.slot).access_ts++; //increment non-accessed timestamps
+                    }
                 }
             }
         }
@@ -247,19 +249,21 @@ void update_access_ts(std::vector <struct Sets> sets_list, uint32_t hit_access_t
  *   LRU - unsigned int
  *   tag - unsigned int
  */
-void evict_block_LRU(std::vector <struct Sets> &block_list, bool hit, unsigned offset, unsigned LRU, unsigned tag) {
+void evict_block_LRU(unsigned index, std::vector <struct Sets> &block_list, bool hit, unsigned offset, unsigned LRU, unsigned tag) {
     for (auto& it : block_list) {
-        for (auto& it2 : it.blocks) {
-            if ((*it2.slot).valid && (*it2.slot).access_ts != LRU) { //increment non-LRU filled blocks
-                (*it2.slot).load_ts++;
-                (*it2.slot).access_ts++;
-            }
-            if ((*it2.slot).valid && (*it2.slot).access_ts == LRU && !hit) { //locate LRU
-                (*it2.slot).tag = tag;
-                it2.offset = offset;
-                (*it2.slot).load_ts = 0;
-                (*it2.slot).access_ts = 0;
-                hit = true;
+        if (it.index == index){
+            for (auto& it2 : it.blocks) {
+                if ((*it2.slot).valid && (*it2.slot).access_ts != LRU) { //increment non-LRU filled blocks
+                    (*it2.slot).load_ts++;
+                    (*it2.slot).access_ts++;
+                }
+                if ((*it2.slot).valid && (*it2.slot).access_ts == LRU && !hit) { //locate LRU
+                    (*it2.slot).tag = tag;
+                    it2.offset = offset;
+                    (*it2.slot).load_ts = 0;
+                    (*it2.slot).access_ts = 0;
+                    hit = true;
+                }
             }
         }
     }
@@ -292,7 +296,7 @@ void load(unsigned address, struct Cache &cache) {
             }
 
             if (hit) { //hit, update access timestamps
-                update_access_ts(block_list, hit_access_ts, false, false);
+                update_access_ts(index, block_list, hit_access_ts, false, false);
                 cache.load_hits++;
                 cache.total_cycles++;
             }
@@ -303,7 +307,7 @@ void load(unsigned address, struct Cache &cache) {
 
                 if (it.filled == cache.blocksperset) {//no more empty spots, evict
                     unsigned LRU = cache.blocksperset - 1;
-                    evict_block_LRU(block_list, hit, offset, LRU, tag);
+                    evict_block_LRU(index, block_list, hit, offset, LRU, tag);
                     cache.total_cycles = cache.total_cycles + (4/cache.bytesperblock) * 100;
                 }
 
