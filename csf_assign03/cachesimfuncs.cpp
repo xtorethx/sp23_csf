@@ -50,8 +50,8 @@ struct Cache buildCache(unsigned numsets, unsigned blocksperset, unsigned bytesp
     std::vector <struct Set> sets;
     std::vector <struct Sets> sets_list;
 
-    for (int i = 0; i < numsets; i++) { //initialize each set
-        for (int j = 0; j < blocksperset; j++) { //initialize blocks in each set
+    for (unsigned i = 0; i < numsets; i++) { //initialize each set
+        for (unsigned j = 0; j < blocksperset; j++) { //initialize blocks in each set
             //initializing a slot
             slot.valid = false;
             slot.dirty = false;
@@ -131,7 +131,7 @@ unsigned get_index(unsigned address, unsigned blocksperset, unsigned numsets) {
  */
 unsigned get_offset(unsigned address, unsigned blocksperset) {
     unsigned blockbits = log2(blocksperset) + 1;
-    return address >> (32 - blocksperset);
+    return address >> (32 - blockbits);
 }
 
 
@@ -145,14 +145,15 @@ unsigned get_offset(unsigned address, unsigned blocksperset) {
  *   memaddress - char array
  *   tmp - char
  */
-int read(struct Cache cache, char ls, char memaddress[], char tmp) {
+int read(struct Cache &cache, char ls, char memaddress[], char tmp) {
     int i = scanf(" %c", &ls);
     scanf("%10s", memaddress);
     scanf(" %c", &tmp);
     if (ls == 'l') {
         cache.total_loads++;
-    } else {
+    } else if (ls == 's') {
         cache.total_stores++;
+        std::cout << cache.total_stores << std::endl;
     }
     return i;
 }
@@ -237,7 +238,7 @@ unsigned hex_to_dec(char hex_unformated[]) {
  *   address - unsigned
  *   cache - Cache struct
  */
-void load_dm(unsigned address, struct Cache cache) {
+void load_dm(unsigned address, struct Cache &cache) {
     unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
     unsigned index = get_index(address, cache.blocksperset, cache.numsets);
     unsigned offset = get_offset(address, cache.blocksperset);
@@ -330,7 +331,7 @@ void update_access_ts_fa(std::vector <struct Sets> sets_list, uint32_t hit_acces
  * Returns:
  *   bool
  */
-bool load_empty_fa(std::vector <struct Sets> sets_list, bool hit, unsigned offset, unsigned tag) {
+bool load_empty_fa(std::vector <struct Sets> &sets_list, bool hit, unsigned offset, unsigned tag) {
     for (auto& it : sets_list) {
         for (auto& it2 : it.sets) {
             if ((*it2.slot).valid) { //increment load timestamp for valid blocks
@@ -360,7 +361,7 @@ bool load_empty_fa(std::vector <struct Sets> sets_list, bool hit, unsigned offse
  *   LRU - unsigned int
  *   tag - unsigned int
  */
-void evict_block_LRU_fa(std::vector <struct Sets> sets_list, bool hit, unsigned offset, unsigned LRU, unsigned tag) {
+void evict_block_LRU_fa(std::vector <struct Sets> &sets_list, bool hit, unsigned offset, unsigned LRU, unsigned tag) {
     for (auto& it : sets_list) {
         for (auto& it2 : it.sets) {
             if ((*it2.slot).valid && (*it2.slot).access_ts != LRU) { //increment non-LRU filled blocks
@@ -385,7 +386,7 @@ void evict_block_LRU_fa(std::vector <struct Sets> sets_list, bool hit, unsigned 
  *   address - unsigned int
  *   cache - Cache struct
  */
-void load_fa(unsigned address, struct Cache cache) {
+void load_fa(unsigned address, struct Cache &cache) {
     unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
     unsigned offset = get_offset(address, cache.blocksperset);
     std::vector <struct Sets> sets_list = cache.sets_list; //1 set
@@ -424,7 +425,7 @@ void load_fa(unsigned address, struct Cache cache) {
  *   address - unsigned int
  *   cache - Cache struct
  */
-void load_sa(unsigned address, struct Cache cache) {
+void load_sa(unsigned address, struct Cache &cache) {
     unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
     unsigned index = get_index(address, cache.blocksperset, cache.numsets);
     unsigned offset = get_offset(address, cache.blocksperset);
@@ -527,7 +528,7 @@ void load_sa(unsigned address, struct Cache cache) {
  *   wb - bool
  *   wa - bool
  */
-void store_dm(unsigned address, struct Cache cache, bool wb, bool wa) { 
+void store_dm(unsigned address, struct Cache &cache, bool wb, bool wa) { 
     unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
     unsigned index = get_index(address, cache.blocksperset, cache.numsets);
     unsigned offset = get_offset(address, cache.blocksperset);
@@ -590,7 +591,7 @@ void store_dm(unsigned address, struct Cache cache, bool wb, bool wa) {
  *   hit_access_ts - uint32_t
  *   wb - bool
  */
-void update_access_ts_write_fa(std::vector <struct Sets> sets_list, uint32_t hit_access_ts, bool wb) {
+void update_access_ts_write_fa(std::vector <struct Sets> &sets_list, uint32_t hit_access_ts, bool wb) {
     for (auto& it : sets_list) {
         for (auto& it2 : it.sets) {
             if ((*it2.slot).valid && (*it2.slot).access_ts <= hit_access_ts) { 
@@ -622,7 +623,7 @@ void update_access_ts_write_fa(std::vector <struct Sets> sets_list, uint32_t hit
  *   wb - bool
  *   wa - bool
  */
-void store_fa(unsigned address, struct Cache cache, bool wb, bool wa) { 
+void store_fa(unsigned address, struct Cache &cache, bool wb, bool wa) { 
     unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
     unsigned offset = get_offset(address, cache.blocksperset);
     std::vector <struct Sets> sets_list = cache.sets_list; //1 set
@@ -669,7 +670,7 @@ void store_fa(unsigned address, struct Cache cache, bool wb, bool wa) {
  *   wb - bool
  *   wa - bool
  */
-void store_sa(unsigned address, struct Cache cache, bool wb, bool wa) { 
+void store_sa(unsigned address, struct Cache &cache, bool wb, bool wa) { 
     unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
     unsigned index = get_index(address, cache.blocksperset, cache.numsets);
     unsigned offset = get_offset(address, cache.blocksperset);
