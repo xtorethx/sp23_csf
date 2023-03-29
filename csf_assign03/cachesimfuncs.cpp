@@ -279,7 +279,7 @@ void load(unsigned address, struct Cache &cache) {
     unsigned index = get_index(address, cache.blocksperset, cache.numsets);
     unsigned offset = get_offset(address, cache.blocksperset);
     
-    std::vector <struct Sets> block_list = cache.block_list;
+    std::vector <struct Sets> &block_list = cache.block_list;
 
     //$uint32_t hit_access_ts = 0;//access_ts holder
     bool hit = false; //check for if hit, false if miss
@@ -291,13 +291,12 @@ void load(unsigned address, struct Cache &cache) {
     unsigned counter = 0; 
     bool found_empty = false;
 
-    std::vector<struct Block> blocks = block_list.at(index).blocks;
+    std::vector<struct Block> &blocks = block_list.at(index).blocks;
     block_list.at(index).load_ts_counter++;
     block_list.at(index).access_ts_counter++;
 
     for (auto& it : blocks) {
         //$it_ind = it.index;
-        counter++;
         if(it.access_ts == block_list.at(index).access_ts_counter) {
             mr = counter;//index of most recent in
         }
@@ -313,6 +312,7 @@ void load(unsigned address, struct Cache &cache) {
             cache.total_cycles++;//increment cycle count
             //$hit_access_ts = (*it2.slot).access_ts; //get access timestamp of hit
         }
+        counter++;
     }
 
     if (!hit) {//iterated through cache and could not find, load miss 
@@ -512,7 +512,7 @@ void store(unsigned address, struct Cache &cache, bool wb, bool wa) {
     unsigned index = get_index(address, cache.blocksperset, cache.numsets);
     //unsigned offset = get_offset(address, cache.blocksperset);
 
-    std::vector <struct Sets> block_list = cache.block_list;
+    std::vector <struct Sets> &block_list = cache.block_list;
     block_list.at(index).access_ts_counter++;
 
     bool hit = false; 
@@ -523,11 +523,9 @@ void store(unsigned address, struct Cache &cache, bool wb, bool wa) {
     unsigned load_ind;
     unsigned counter = 0; 
 
-    std::vector<struct Block> blocks = block_list.at(index).blocks;
+    std::vector<struct Block> &blocks = block_list.at(index).blocks;
     
     for (auto& it : blocks) {
-        counter++;
-
         // if(it.access_ts == block_list.at(index).access_ts_counter) {
         //     access_ind = counter;
         // }
@@ -547,6 +545,7 @@ void store(unsigned address, struct Cache &cache, bool wb, bool wa) {
                 //TO DO: increment write through counter; write to memory/cycle count stuff
             }
         }
+        counter++;
     }
     if (!hit) { //store miss
         cache.store_misses++;    

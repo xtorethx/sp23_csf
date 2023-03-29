@@ -84,7 +84,13 @@ int main(int argc, char** argv) {
     char memaddress[11];
     char tmp[10];
     int i = 0;
+    int counter;
     while (read(cache, ls, memaddress, tmp) != -1) {
+        counter++;
+
+        if (counter == 70) {
+            //for debugger breakpoint
+        }
         unsigned address =  hex_to_dec(memaddress);
         if (ls == 'l') {
             load(address, cache);
