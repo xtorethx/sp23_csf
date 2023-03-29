@@ -99,6 +99,5 @@ int main(int argc, char** argv) {
             store(address, cache, wb, wa);
         }
     }
-     std::cout << "loads: " << i << std::endl;
     write(cache);
 }

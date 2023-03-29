@@ -295,10 +295,12 @@ void load(unsigned address, struct Cache &cache) {
     block_list.at(index).load_ts_counter++;
     block_list.at(index).access_ts_counter++;
 
+    int lru_ts = blocks.at(0).access_ts;
+    int lru_index = 0;
     for (auto& it : blocks) {
         //$it_ind = it.index;
-        if(it.access_ts == block_list.at(index).access_ts_counter) {
-            mr = counter;//index of most recent in
+        if(it.access_ts < lru_ts) {
+            lru_index= it.offset;//index of most recent in
         }
         if (!(it.valid) && !(found_empty)) {//index of empty block
             next_empty = counter;
@@ -322,16 +324,16 @@ void load(unsigned address, struct Cache &cache) {
         if (block_list.at(index).filled == cache.blocksperset) {//no more empty spots, evict
             //$unsigned LRU = cache.blocksperset - 1;
             //$evict_block_LRU(index, block_list, hit, offset, LRU, tag);
-            blocks.at(mr).tag = tag;
+            blocks.at(lru_index).tag = tag;
             //block_list.at(index).access_ts_counter++;
-            blocks.at(mr).load_ts = block_list.at(index).load_ts_counter;//update load ts
+            blocks.at(lru_index).load_ts = block_list.at(index).load_ts_counter;//update load ts
             //blocks.at(mr).access_ts = block_list.at(index).access_ts_counter;//update access ts
             //$it.tag = tag;
             cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100;
         }
         else {//empty spot exists, find and fill
             blocks.at(next_empty).tag = tag; 
-            blocks.at(next_empty).offset = offset; 
+            //blocks.at(next_empty).offset = offset; 
             blocks.at(next_empty).valid = true; 
             block_list.at(index).filled++;
             blocks.at(next_empty).load_ts = block_list.at(index).load_ts_counter;
@@ -512,7 +514,7 @@ void store(unsigned address, struct Cache &cache, bool wb, bool wa) {
     unsigned index = get_index(address, cache.blocksperset, cache.numsets);
     //unsigned offset = get_offset(address, cache.blocksperset);
 
-    std::vector <struct Sets> &block_list = cache.block_list;
+    std::vector <struct Sets> block_list = cache.block_list;
     block_list.at(index).access_ts_counter++;
 
     bool hit = false; 
@@ -523,9 +525,11 @@ void store(unsigned address, struct Cache &cache, bool wb, bool wa) {
     unsigned load_ind;
     unsigned counter = 0; 
 
-    std::vector<struct Block> &blocks = block_list.at(index).blocks;
+    std::vector<struct Block> blocks = block_list.at(index).blocks;
     
     for (auto& it : blocks) {
+        counter++;
+
         // if(it.access_ts == block_list.at(index).access_ts_counter) {
         //     access_ind = counter;
         // }
@@ -543,9 +547,9 @@ void store(unsigned address, struct Cache &cache, bool wb, bool wa) {
             }
             else { //write through
                 //TO DO: increment write through counter; write to memory/cycle count stuff
+                cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100;
             }
         }
-        counter++;
     }
     if (!hit) { //store miss
         cache.store_misses++;    
