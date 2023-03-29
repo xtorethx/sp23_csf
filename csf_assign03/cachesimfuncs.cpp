@@ -317,6 +317,7 @@ void load(unsigned address, struct Cache &cache) {
             blocks.at(lru_index).tag = tag;
             blocks.at(lru_index).offset = offset;
             //block_list.at(index).access_ts_counter++;
+            blocks.at(lru_index).access_ts = block_list.at(index).access_ts_counter;
             blocks.at(lru_index).load_ts = block_list.at(index).load_ts_counter;//update load ts
             //blocks.at(mr).access_ts = block_list.at(index).access_ts_counter;//update access ts
             //$it.tag = tag;
@@ -328,6 +329,7 @@ void load(unsigned address, struct Cache &cache) {
             //blocks.at(next_empty).offset = offset; 
             blocks.at(next_empty).valid = true; 
             block_list.at(index).filled++;
+            blocks.at(next_empty).access_ts = block_list.at(index).access_ts_counter;
             blocks.at(next_empty).load_ts = block_list.at(index).load_ts_counter;
         }
     }
