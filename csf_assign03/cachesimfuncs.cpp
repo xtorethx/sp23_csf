@@ -285,7 +285,7 @@ void load(unsigned address, struct Cache &cache) {
     bool hit = false; //check for if hit, false if miss
     //$bool find_ind = false;
     //$unsigned it_ind;
-    unsigned mr;
+    unsigned mr = 0;
     unsigned next_empty;
     unsigned load_ind;
     unsigned counter = 0; 
@@ -553,6 +553,7 @@ void store(unsigned address, struct Cache &cache, bool wb, bool wa) {
             //$(*it2.slot).tag = tag;
             cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100;
             load(address, cache);
+            cache.load_misses--;
             //TO DO: increment write allocate counter; write to memory/cycle count stuff
         }
         else {//no write allocate
