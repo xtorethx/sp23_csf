@@ -1,5 +1,7 @@
 #include <iostream>
+#include <ostream>
 #include <string>
+#include <type_traits>
 #include <vector>
 #include <map>
 #include <cstdlib>
@@ -85,12 +87,28 @@ int main(int argc, char** argv) {
     char tmp[10];
     int i = 0;
     int counter;
+    // unsigned olm = cache.load_misses;
+    // unsigned olh = cache.load_hits;
+    // unsigned osm = cache.store_misses;
+    // unsigned osh = cache.store_hits;
     while (read(cache, ls, memaddress, tmp) != -1) {
         counter++;
-
         if (counter == 70) {
             //for debugger breakpoint
         }
+        // if (counter-1 != cache.load_hits + cache.load_misses + cache.store_hits + cache.store_misses) {
+        //     std::cout << "breaks at..." << counter << std::endl;
+        //     std::cout << "olm is " << olm << " nlm is " << cache.load_misses << std::endl;
+        //     std::cout << "olh is " <<  olh << " nlh is " << cache.load_hits << std::endl;
+        //     std::cout << "osm is " <<  osm << " nsm is " << cache.store_misses << std::endl;
+        //     std::cout << "osh is " <<  osh << " nsh is " << cache.store_hits << std::endl;
+        //     break;
+        // }
+
+        // olm = cache.load_misses;
+        // olh = cache.load_hits;
+        // osm = cache.store_misses;
+        // osh = cache.store_hits;
         unsigned address =  hex_to_dec(memaddress);
         if (ls == 'l') {
             load(address, cache);
