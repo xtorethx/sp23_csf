@@ -94,8 +94,8 @@ struct Cache buildCache(unsigned numsets, unsigned blocksperset, unsigned bytesp
  *   unsigned int
  */
 unsigned get_tag(unsigned address, unsigned blocksperset, unsigned numsets) {
-    unsigned blockbits = log2(blocksperset) + 1;
-    unsigned setbits = log2(numsets) + 1;
+    unsigned blockbits = log2(blocksperset);
+    unsigned setbits = log2(numsets);
     return address >> (blockbits + setbits);
 }
 
@@ -111,10 +111,10 @@ unsigned get_tag(unsigned address, unsigned blocksperset, unsigned numsets) {
  *   unsigned int
  */
 unsigned get_index(unsigned address, unsigned blocksperset, unsigned numsets) {
-    unsigned blockbits = log2(blocksperset) + 1;
-    unsigned setbits = log2(numsets) + 1;
+    unsigned blockbits = log2(blocksperset);
+    unsigned setbits = log2(numsets);
     unsigned index = address << (32 - (blockbits + setbits));
-    index = index >> blockbits;
+    index = index >> (32 - setbits);
     return index;
 }
 
@@ -130,8 +130,8 @@ unsigned get_index(unsigned address, unsigned blocksperset, unsigned numsets) {
  *   unsigned int
  */
 unsigned get_offset(unsigned address, unsigned blocksperset) {
-    unsigned blockbits = log2(blocksperset) + 1;
-    return address >> (32 - blockbits);
+    unsigned blockbits = log2(blocksperset);
+    return address << (32 - blockbits);
 }
 
 
