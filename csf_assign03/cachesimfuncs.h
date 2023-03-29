@@ -9,22 +9,20 @@
 #include <algorithm>
 #include <cmath>
 
-struct Slot{
+struct Block{
+    uint32_t offset;
     uint32_t tag;
     bool valid; // true if filled, false by default (unfilled)
     uint32_t load_ts, access_ts;
     bool dirty;
 };
 
-struct Block{
-    uint32_t offset;
-    Slot * slot;
-};
-
 struct Sets {
     std::vector <struct Block> blocks; //in direct mapping/fully associative, size of 1 
     uint32_t index; //non-applicable in fully associative
     uint32_t filled; //number of valid blocks in set
+    unsigned access_ts_counter; //$
+    unsigned load_ts_counter; //$
 };
 
 struct Cache{
