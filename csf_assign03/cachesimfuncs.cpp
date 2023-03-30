@@ -11,7 +11,19 @@
 #include <cmath>
 #include "cachesimfuncs.h"
 
-//$updated
+//README
+//the error is not that something is doubling up
+//error is not in read reading in wrong chunks
+    //changed read for mem address to simplify but should not be an issue
+//not that the offset, index, tag are spitting out junk
+    //using bit shift for get offset resulted in junk when shifting sometimes
+    //junk, aka, very big numbers
+//works for small cases like input, read03, write01, input2
+//errors with big files like gcc
+//error for basic 1 4 4 case with gcc but smaller margin of error vs
+//bigger cache like 256 4 16
+
+
 struct Block{
     uint32_t offset;
     uint32_t tag;
