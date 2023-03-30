@@ -46,6 +46,8 @@ int main(int argc, char** argv) {
     bool lru;
     if (evict_alg == "lru") {
         lru = true;
+    } else {
+        lru = false;
     }
     if (store_hit == "write-back") {
         wb = true;
