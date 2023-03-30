@@ -43,6 +43,10 @@ int main(int argc, char** argv) {
 
     bool wb;
     bool wa;
+    bool lru;
+    if (evict_alg == "lru") {
+        lru = true;
+    }
     if (store_hit == "write-back") {
         wb = true;
     } else {
@@ -111,10 +115,10 @@ int main(int argc, char** argv) {
         // osh = cache.store_hits;
         unsigned address =  hex_to_dec(memaddress);
         if (ls == 'l') {
-            load(address, cache);
+            load(address, cache, lru);
             i++;
         } else if (ls == 's') {
-            store(address, cache, wb, wa);
+            store(address, cache, wb, wa, lru);
         }
     }
     write(cache);

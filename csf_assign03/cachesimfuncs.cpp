@@ -269,7 +269,7 @@ unsigned hex_to_dec(char hex_unformated[]) {
  *   address - unsigned
  *   cache - Cache struct
  */
-void load(unsigned address, struct Cache &cache) {
+void load(unsigned address, struct Cache &cache, bool lru) {
     unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
     unsigned index = get_index(address, cache.blocksperset, cache.numsets);
     unsigned offset = get_offset(address, cache.blocksperset);
@@ -288,13 +288,19 @@ void load(unsigned address, struct Cache &cache) {
     block_list.at(index).access_ts_counter++;
 
     unsigned lru_ts = blocks.at(0).access_ts;
+    unsigned fifo_ts = blocks.at(0).load_ts;
     int lru_index = 0;
+    int fifo_index = 0;
     for (auto& it : blocks) {
         //$it_ind = it.index;
 
         if(it.access_ts < lru_ts) {
             lru_ts = it.access_ts;
-            lru_index = counter;//index of most recent in
+            lru_index = counter;//index of least recent in
+        }
+        if(it.load_ts < fifo_ts) {
+            fifo_ts = it.load_ts;
+            fifo_index = counter;//index of first loaded
         }
         if (!(it.valid) && !(found_empty)) {//index of empty block
             next_empty = counter;
@@ -303,7 +309,6 @@ void load(unsigned address, struct Cache &cache) {
         if (it.valid && it.tag == tag) { //load hit
             hit = true;
             it.access_ts = block_list.at(index).access_ts_counter;//update access ts
-            it.load_ts = block_list.at(index).load_ts_counter;//update load ts
             cache.load_hits++;//increment load hits
             cache.total_cycles++;//increment cycle count
             //$hit_access_ts = (*it2.slot).access_ts; //get access timestamp of hit
@@ -316,16 +321,24 @@ void load(unsigned address, struct Cache &cache) {
         cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100;
 
         if (block_list.at(index).filled == cache.blocksperset) {//no more empty spots, evict
-            //$unsigned LRU = cache.blocksperset - 1;
-            //$evict_block_LRU(index, block_list, hit, offset, LRU, tag);
-            blocks.at(lru_index).tag = tag;
-            blocks.at(lru_index).offset = offset;
-            //block_list.at(index).access_ts_counter++;
-            blocks.at(lru_index).access_ts = block_list.at(index).access_ts_counter;
-            blocks.at(lru_index).load_ts = block_list.at(index).load_ts_counter;//update load ts
-            //blocks.at(mr).access_ts = block_list.at(index).access_ts_counter;//update access ts
-            //$it.tag = tag;
-            cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100;
+            if (lru) {
+                //$unsigned LRU = cache.blocksperset - 1;
+                //$evict_block_LRU(index, block_list, hit, offset, LRU, tag);
+                blocks.at(lru_index).tag = tag;
+                blocks.at(lru_index).offset = offset;
+                //block_list.at(index).access_ts_counter++;
+                blocks.at(lru_index).access_ts = block_list.at(index).access_ts_counter;
+                blocks.at(lru_index).load_ts = block_list.at(index).load_ts_counter;//update load ts
+                //blocks.at(mr).access_ts = block_list.at(index).access_ts_counter;//update access ts
+                //$it.tag = tag;
+                cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100;
+            } else {
+                blocks.at(fifo_index).tag = tag;
+                blocks.at(fifo_index).offset = offset;
+                blocks.at(fifo_index).access_ts = block_list.at(index).access_ts_counter;
+                blocks.at(fifo_index).load_ts = block_list.at(index).load_ts_counter;
+                cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100;
+            }
         }
         else {//empty spot exists, find and fill
             blocks.at(next_empty).tag = tag;
@@ -507,10 +520,9 @@ void load(unsigned address, struct Cache &cache) {
  *   wb - bool
  *   wa - bool
  */
-void store(unsigned address, struct Cache &cache, bool wb, bool wa) { 
+void store(unsigned address, struct Cache &cache, bool wb, bool wa, bool lru) { 
     unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
     unsigned index = get_index(address, cache.blocksperset, cache.numsets);
-    unsigned offset = get_offset(address, cache.blocksperset);
     //unsigned offset = get_offset(address, cache.blocksperset);
 
     std::vector <struct Sets> block_list = cache.block_list;
@@ -555,7 +567,7 @@ void store(unsigned address, struct Cache &cache, bool wb, bool wa) {
             //$(*it2.slot).tag = tag;
             cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100;
             unsigned total_cycles = cache.total_cycles;
-            load(address, cache);
+            load(address, cache, lru);
             cache.load_misses--;
             cache.total_cycles = total_cycles;
             //TO DO: increment write allocate counter; write to memory/cycle count stuff

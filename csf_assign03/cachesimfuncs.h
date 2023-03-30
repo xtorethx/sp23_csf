@@ -53,7 +53,7 @@ void write(struct Cache cache);
 
 unsigned hex_to_dec(char hex_unformated[]);
 
-void load(unsigned address, struct Cache &cache);
+void load(unsigned address, struct Cache &cache, bool lru);
 
 void update_access_ts(std::vector <struct Sets> &sets_list, uint32_t hit_access_ts, bool store, bool wb);
 
@@ -65,7 +65,7 @@ void evict_block_LRU(std::vector <struct Sets> &sets_list, bool hit, unsigned of
 
 // void load_sa(unsigned address, struct Cache &cache);
 
-void store(unsigned address, struct Cache &cache, bool wb, bool wa);
+void store(unsigned address, struct Cache &cache, bool wb, bool wa, bool lru);
 
 //void update_access_ts_write_fa(std::vector <struct Sets> &sets_list, uint32_t hit_access_ts, bool wb);
 

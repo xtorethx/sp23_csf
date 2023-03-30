@@ -3,3 +3,14 @@ l 0x0000AA40 1
 l 0x0000AA40 1
 l 0x0000F231 1
 l 0x8000AA40 1
+
+s 0x1fffff50 1 //store miss no eviction
+s 0x1fffff50 1 //store hit no eviction
+l 0x1fffff88 6 //load miss no eviction
+l 0x1fffff50 2 //load hit no eviction
+s 0x1fffff98 2 //store miss no eviction
+s 0x2fffff98 3 //store miss no eviction
+l 0x2fffff98 4 //load hit no eviction
+l 0x2fffff98 4 //load hit no eviction
+l 0x3fffff98 4 //load miss eviction
+l 0x1fffff88 6 //load miss eviction
