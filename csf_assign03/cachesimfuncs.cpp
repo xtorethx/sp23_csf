@@ -113,6 +113,9 @@ unsigned get_tag(unsigned address, unsigned blocksperset, unsigned numsets) {
  *   unsigned int
  */
 unsigned get_index(unsigned address, unsigned blocksperset, unsigned numsets) {
+    if (numsets == 1) {
+        return 0;
+    }
     unsigned blockbits = log2(blocksperset);
     unsigned setbits = log2(numsets);
     unsigned index = address << (32 - (blockbits + setbits));
@@ -276,7 +279,7 @@ void load(unsigned address, struct Cache &cache) {
     bool hit = false; //check for if hit, false if miss
     //$bool find_ind = false;
     //$unsigned it_ind;
-    unsigned next_empty;
+    unsigned next_empty = 0;
     unsigned counter = 0; 
     bool found_empty = false;
 
@@ -290,6 +293,7 @@ void load(unsigned address, struct Cache &cache) {
         //$it_ind = it.index;
 
         if(it.access_ts < lru_ts) {
+            lru_ts = it.access_ts;
             lru_index = counter;//index of most recent in
         }
         if (!(it.valid) && !(found_empty)) {//index of empty block
