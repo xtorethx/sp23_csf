@@ -263,7 +263,7 @@ void load(unsigned address, struct Cache &cache, bool lru) {
         cache.load_misses++;
         cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100; //from memory to cache
         cache.total_cycles++; //from memory to cache
-        cache.total_cycles++; //fromcache to CPU
+        cache.total_cycles++; //from cache to CPU
 
         if (!found_empty) {//no more empty spots, evict
             int ind = 0; 
@@ -345,9 +345,12 @@ void store(unsigned address, struct Cache &cache, bool wb, bool wa, bool lru) {
            // cache.total_cycles = total_cycles;
             //cache.total_cycles++;//Cache to CPU
         }
-        else {//no write allocate
-            cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100; //write directly from main memory
+        if (!wb) { //write through
+            cache.total_cycles+=100;
         }
+        // else {//no write allocate
+        //     //cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100; //write directly from main memory
+        // }
     }
 }
 
