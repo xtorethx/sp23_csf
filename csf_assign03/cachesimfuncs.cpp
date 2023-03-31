@@ -254,15 +254,16 @@ void load(unsigned address, struct Cache &cache, bool lru) {
             hit = true;
             it.access_ts = block_list.at(index).access_ts_counter;//update access ts
             cache.load_hits++;//increment load hits
-            cache.total_cycles++;//increment cycle count
+            cache.total_cycles++;//from cache to CPU
         }
         counter++;
     }
 
     if (!hit) {//iterated through cache and could not find, load miss 
         cache.load_misses++;
-        cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100; //cache to main memory
-        cache.total_cycles++; //cache to CPU
+        cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100; //from memory to cache
+        cache.total_cycles++; //from memory to cache
+        cache.total_cycles++; //fromcache to CPU
 
         if (!found_empty) {//no more empty spots, evict
             int ind = 0; 
@@ -277,12 +278,12 @@ void load(unsigned address, struct Cache &cache, bool lru) {
             blocks.at(ind).access_ts = block_list.at(index).access_ts_counter;
             blocks.at(ind).load_ts = block_list.at(index).load_ts_counter;//update load ts
             if (blocks.at(ind).dirty) {
-                cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100; //write to memory
-                cache.total_cycles++; //cache to memory
+                cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100; //from CPU to memory
+                //cache.total_cycles++; //CPU to memory
                 blocks.at(ind).dirty = false;
             }
-            cache.total_cycles++;
-            cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100;
+            //cache.total_cycles++;
+            //cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100;
         }
         else {//empty spot exists, find and fill
             blocks.at(next_empty).tag = tag;
@@ -319,29 +320,33 @@ void store(unsigned address, struct Cache &cache, bool wb, bool wa, bool lru) {
         if (it.valid && it.tag == tag) { //store hit
             hit = true;
             cache.store_hits++;
-            cache.total_cycles++;//CPU to cache
+            //cache.total_cycles++;//CPU to cache
             it.access_ts = block_list.at(index).access_ts_counter;//update access ts
             if (wb) { //write back
                 it.dirty = true;
+                cache.total_cycles++; //from CPU to cache
             }
             else { //write through
-                cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100; //cache to memory
-                cache.total_cycles++; //cache to memory
+                cache.total_cycles += 100; //from CPU to Memory
+                //cache.total_cycles++; //from CPU to Cache
             }
         }
     }
     if (!hit) { //store miss
         cache.store_misses++;  
         if (wa) {//write allocate
-            cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100; //get from memory
-            cache.total_cycles++;//cache to main memory
-            unsigned total_cycles = cache.total_cycles;
+            //cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100; //from memory to Cache
+            //cache.total_cycles++; //from memory to cache
+            //cache.total_cycles++; //CPU to cache
+            //cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100; //CPU to memory
+            //unsigned total_cycles = cache.total_cycles;
             load(address, cache, lru);
             cache.load_misses--;
-            cache.total_cycles = total_cycles;
+           // cache.total_cycles = total_cycles;
+            //cache.total_cycles++;//Cache to CPU
         }
         else {//no write allocate
-            //cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100; //write directly from main memory
+            cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100; //write directly from main memory
         }
     }
 }
