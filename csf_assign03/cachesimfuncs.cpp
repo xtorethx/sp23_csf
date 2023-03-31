@@ -4,7 +4,6 @@
 #include <iostream>
 #include <iterator>
 #include <string>
-#include <utility>
 #include <vector>
 #include <map>
 #include <cstdio>
@@ -26,7 +25,7 @@
 
 
 struct Block{
-    //uint32_t offset;
+    uint32_t offset;
     uint32_t tag;
     bool valid; // true if filled, false by default (unfilled)
     uint32_t load_ts, access_ts;
@@ -71,7 +70,7 @@ struct Cache buildCache(unsigned numsets, unsigned blocksperset, unsigned bytesp
             create_set.tag = 0;
             create_set.load_ts = 0;
             create_set.access_ts = 0;
-            //create_set.offset = j;
+            create_set.offset = j;
             sets.push_back(create_set); //add block (set) to sets
         }
         create_sets.blocks = sets;
@@ -102,14 +101,14 @@ struct Cache buildCache(unsigned numsets, unsigned blocksperset, unsigned bytesp
  *
  * Parameters:
  *   address - unsigned
- *   blocksperset - unsigned
+ *   bytesperblock - unsigned
  *   numsets - unsigned
  *
  * Returns:
  *   unsigned int
  */
-unsigned get_tag(unsigned address, unsigned blocksperset, unsigned numsets) {
-    unsigned blockbits = log2(blocksperset);
+unsigned get_tag(unsigned address, unsigned bytesperblock, unsigned numsets) {
+    unsigned blockbits = log2(bytesperblock);
     unsigned setbits = log2(numsets);
     return address >> (blockbits + setbits);
 }
@@ -125,11 +124,11 @@ unsigned get_tag(unsigned address, unsigned blocksperset, unsigned numsets) {
  * Returns:
  *   unsigned int
  */
-unsigned get_index(unsigned address, unsigned blocksperset, unsigned numsets) {
-    if (numsets == 1) {
+unsigned get_index(unsigned address, unsigned bytesperblock, unsigned numsets) {
+    if (numsets == 1) { //fully associations
         return 0;
     }
-    unsigned blockbits = log2(blocksperset);
+    unsigned blockbits = log2(bytesperblock);
     unsigned setbits = log2(numsets);
     unsigned index = address << (32 - (blockbits + setbits));
     index = index >> (32 - setbits);
@@ -147,11 +146,11 @@ unsigned get_index(unsigned address, unsigned blocksperset, unsigned numsets) {
  * Returns:
  *   unsigned int
  */
-unsigned get_offset(unsigned address, unsigned blocksperset) {
-    if (blocksperset == 1) {
+unsigned get_offset(unsigned address, unsigned blocksperset, unsigned bytesperblock) {
+    if (blocksperset == 1) { //direct mapping
         return 0;
     }
-    unsigned blockbits = log2(blocksperset);
+    unsigned blockbits = log2(bytesperblock);
     return address & unsigned(pow(2, blockbits) - 1);
 }
 
@@ -196,65 +195,20 @@ void write(struct Cache cache) {
     std::cout << "Total cycles: " << cache.total_cycles << std::endl;
 }
 
+// //char to int helper function
+// int hexchar_to_int(char hex) {
+//     char hexchar[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+//     for (int i = 0; i < 16; i++) {
+//         if (hexchar[i] == hex) {
+//             return i;
+//         }
+//     }
+//     return 0;
+// }
+
 //hex to dec function 
 unsigned hex_to_dec(char hex_unformated[]) {
     return std::stoul (hex_unformated,nullptr,16);
-}
-
-std::tuple<struct Block, bool, bool> find_block(struct Cache &cache, unsigned address, bool lru) {
-    unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
-    unsigned index = get_index(address, cache.blocksperset, cache.numsets);
-
-    bool hit = false;
-    bool found_empty = false;
-
-    std::vector <struct Sets> &block_list = cache.block_list;
-    std::vector<struct Block> &blocks = block_list.at(index).blocks;
-
-    unsigned next_empty = 0;
-    unsigned counter = 0;
-
-    block_list.at(index).access_ts_counter++;
-
-    unsigned evict_ts = 0;
-    int evict_index = 0;
-
-    if (lru) {
-        evict_ts = blocks.at(0).access_ts;
-    } else {
-        evict_ts = blocks.at(0).load_ts;
-    }
-
-    for (auto& it : blocks) {
-        // find evict block
-        if(lru && it.access_ts < evict_ts) {
-            evict_ts = it.access_ts;
-            evict_index = counter;//index of least recent in
-        } else if (!lru && it.load_ts < evict_ts) {
-            evict_ts = it.load_ts;
-            evict_index = counter;//index of first loaded
-        }
-
-        if (!(it.valid) && !(found_empty)) {//index of empty block
-            next_empty = counter;
-            found_empty = true;
-        }
-        if (it.valid && it.tag == tag) { //load hit
-            it.access_ts = block_list.at(index).access_ts_counter;
-            return std::make_tuple(it, true, false);
-        }
-        counter++;
-    }
-    if (!hit) {//iterated through cache and could not find, load miss 
-        if (!found_empty) {//no more empty spots, evict
-            return std::make_tuple(blocks.at(evict_index), false, false);
-        }
-        else {//empty spot exists, find and fill
-            return std::make_tuple(blocks.at(next_empty), false, true);
-        }
-    }
-    //should never reach here
-    return std::make_tuple(blocks.at(0), false, false);
 }
 
 /*
@@ -265,111 +219,78 @@ std::tuple<struct Block, bool, bool> find_block(struct Cache &cache, unsigned ad
  *   cache - Cache struct
  */
 void load(unsigned address, struct Cache &cache, bool lru) {
-    // unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
-    // unsigned index = get_index(address, cache.blocksperset, cache.numsets);
-    // unsigned offset = get_offset(address, cache.blocksperset);
-    // std::vector <struct Sets> &block_list = cache.block_list;
-
-    // //$uint32_t hit_access_ts = 0;//access_ts holder
-    // bool hit = false; //check for if hit, false if miss
-    // //$bool find_ind = false;
-    // //$unsigned it_ind;
-    // unsigned next_empty = 0;
-    // unsigned counter = 0; 
-    // bool found_empty = false;
-
-    // std::vector<struct Block> &blocks = block_list.at(index).blocks;
-    // block_list.at(index).load_ts_counter++;
-    // block_list.at(index).access_ts_counter++;
-
-    // unsigned lru_ts = blocks.at(0).access_ts;
-    // unsigned fifo_ts = blocks.at(0).load_ts;
-    // int lru_index = 0;
-    // int fifo_index = 0;
-    // for (auto& it : blocks) {
-    //     //$it_ind = it.index;
-
-    //     if(it.access_ts < lru_ts) {
-    //         lru_ts = it.access_ts;
-    //         lru_index = counter;//index of least recent in
-    //     }
-    //     if(it.load_ts < fifo_ts) {
-    //         fifo_ts = it.load_ts;
-    //         fifo_index = counter;//index of first loaded
-    //     }
-    //     if (!(it.valid) && !(found_empty)) {//index of empty block
-    //         next_empty = counter;
-    //         found_empty = true;
-    //     }
-    //     if (it.valid && it.tag == tag) { //load hit
-    //         hit = true;
-    //         it.access_ts = block_list.at(index).access_ts_counter;//update access ts
-    //         cache.load_hits++;//increment load hits
-    //         cache.total_cycles++;//increment cycle count
-    //         //$hit_access_ts = (*it2.slot).access_ts; //get access timestamp of hit
-    //     }
-    //     counter++;
-    // }
-
-    // if (!hit) {//iterated through cache and could not find, load miss 
-    //     cache.load_misses++;
-    //     cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100;
-
-    //     if (!found_empty) {//no more empty spots, evict
-    //         if (lru) {
-    //             //$unsigned LRU = cache.blocksperset - 1;
-    //             //$evict_block_LRU(index, block_list, hit, offset, LRU, tag);
-    //             blocks.at(lru_index).tag = tag;
-    //             //blocks.at(lru_index).offset = offset;
-    //             //block_list.at(index).access_ts_counter++;
-    //             blocks.at(lru_index).access_ts = block_list.at(index).access_ts_counter;
-    //             blocks.at(lru_index).load_ts = block_list.at(index).load_ts_counter;//update load ts
-    //             //blocks.at(mr).access_ts = block_list.at(index).access_ts_counter;//update access ts
-    //             //$it.tag = tag;
-    //             cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100;
-    //         } else {
-    //             blocks.at(fifo_index).tag = tag;
-    //             //blocks.at(fifo_index).offset = offset;
-    //             blocks.at(fifo_index).access_ts = block_list.at(index).access_ts_counter;
-    //             blocks.at(fifo_index).load_ts = block_list.at(index).load_ts_counter;
-    //             cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100;
-    //         }
-    //     }
-    //     else {//empty spot exists, find and fill
-    //         blocks.at(next_empty).tag = tag;
-    //         //blocks.at(lru_index).offset = offset;
-    //         //blocks.at(next_empty).offset = offset; 
-    //         blocks.at(next_empty).valid = true; 
-    //         block_list.at(index).filled++;
-    //         blocks.at(next_empty).access_ts = block_list.at(index).access_ts_counter;
-    //         blocks.at(next_empty).load_ts = block_list.at(index).load_ts_counter;
-    //     }
-    // }
-
-    std::tuple<struct Block, bool, bool> found = find_block(cache, address, lru);
-    unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
-    unsigned index = get_index(address, cache.blocksperset, cache.numsets);
-
+    unsigned tag = get_tag(address, cache.bytesperblock, cache.numsets);
+    unsigned index = get_index(address, cache.bytesperblock, cache.numsets);
+    unsigned offset = get_offset(address, cache.blocksperset, cache.bytesperblock);
     std::vector <struct Sets> &block_list = cache.block_list;
-    block_list.at(index).access_ts_counter++;
-    block_list.at(index).load_ts_counter++;
 
-    if (std::get<1>(found)) {
-        cache.load_hits++;
-        cache.total_cycles++;
-    } else {
+    bool hit = false; //check for if hit, false if miss
+    unsigned next_empty = 0;
+    unsigned counter = 0; 
+    bool found_empty = false;
+
+    std::vector<struct Block> &blocks = block_list.at(index).blocks;
+    block_list.at(index).load_ts_counter++;
+    block_list.at(index).access_ts_counter++;
+
+    unsigned lru_ts = blocks.at(0).access_ts;
+    unsigned fifo_ts = blocks.at(0).load_ts;
+    int lru_index = 0;
+    int fifo_index = 0;
+    for (auto& it : blocks) {
+        if(it.access_ts < lru_ts) {
+            lru_ts = it.access_ts;
+            lru_index = counter;//index of least recent in
+        }
+        if(it.load_ts < fifo_ts) {
+            fifo_ts = it.load_ts;
+            fifo_index = counter;//index of first loaded
+        }
+        if (!(it.valid) && !(found_empty)) {//index of empty block
+            next_empty = counter;
+            found_empty = true;
+        }
+        if (it.valid && it.tag == tag) { //load hit
+            hit = true;
+            it.access_ts = block_list.at(index).access_ts_counter;//update access ts
+            cache.load_hits++;//increment load hits
+            cache.total_cycles++;//increment cycle count
+        }
+        counter++;
+    }
+
+    if (!hit) {//iterated through cache and could not find, load miss 
         cache.load_misses++;
-        //write into cache from mem
-        cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100;
-        std::get<0>(found).tag = tag;
-        std::get<0>(found).valid = true;
-        std::get<0>(found).load_ts = block_list.at(index).load_ts_counter;
-        std::get<0>(found).access_ts = block_list.at(index).access_ts_counter;
-        if (std::get<2>(found)) {
-            block_list.at(index).filled++;
-        } else {
-            // evict, write in mem from cache
+        cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100; //cache to main memory
+        cache.total_cycles++; //cache to CPU
+
+        if (!found_empty) {//no more empty spots, evict
+            int ind = 0; 
+            if (lru) {
+                ind = lru_index;
+            }
+            else {
+                ind = fifo_index;
+            }
+            blocks.at(ind).tag = tag;
+            blocks.at(ind).offset = offset;
+            blocks.at(ind).access_ts = block_list.at(index).access_ts_counter;
+            blocks.at(ind).load_ts = block_list.at(index).load_ts_counter;//update load ts
+            if (blocks.at(ind).dirty) {
+                cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100; //write to memory
+                cache.total_cycles++; //cache to memory
+                blocks.at(ind).dirty = false;
+            }
+            cache.total_cycles++;
             cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100;
+        }
+        else {//empty spot exists, find and fill
+            blocks.at(next_empty).tag = tag;
+            blocks.at(lru_index).offset = offset;
+            blocks.at(next_empty).valid = true; 
+            block_list.at(index).filled++;
+            blocks.at(next_empty).access_ts = block_list.at(index).access_ts_counter;
+            blocks.at(next_empty).load_ts = block_list.at(index).load_ts_counter;
         }
     }
 }
@@ -385,59 +306,42 @@ void load(unsigned address, struct Cache &cache, bool lru) {
  *   wa - bool
  */
 void store(unsigned address, struct Cache &cache, bool wb, bool wa, bool lru) { 
-    unsigned tag = get_tag(address, cache.blocksperset, cache.numsets);
-    unsigned index = get_index(address, cache.blocksperset, cache.numsets);
-    //unsigned offset = get_offset(address, cache.blocksperset);
-
+    unsigned tag = get_tag(address, cache.bytesperblock, cache.numsets);
+    unsigned index = get_index(address, cache.bytesperblock, cache.numsets);
     std::vector <struct Sets> &block_list = cache.block_list;
     block_list.at(index).access_ts_counter++;
-
     bool hit = false;
-    //uint32_t hit_access_ts = 0;//access_ts holder
-    //unsigned it_ind;
-    //unsigned access_ind;
-    // unsigned next_empty;
     unsigned counter = 0; 
-
     std::vector<struct Block> &blocks = block_list.at(index).blocks;
     
     for (auto& it : blocks) {
         counter++;
-
-        // if(it.access_ts == block_list.at(index).access_ts_counter) {
-        //     access_ind = counter;
-        // }
-        // if (!(it.valid)) {
-        //     next_empty = counter;
-        // }
         if (it.valid && it.tag == tag) { //store hit
             hit = true;
             cache.store_hits++;
-            cache.total_cycles++;
+            cache.total_cycles++;//CPU to cache
             it.access_ts = block_list.at(index).access_ts_counter;//update access ts
             if (wb) { //write back
                 it.dirty = true;
-                //TO DO: increment write back counter; write to memory/cycle count stuff
             }
             else { //write through
-                //TO DO: increment write through counter; write to memory/cycle count stuff
-                cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100;
+                cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100; //cache to memory
+                cache.total_cycles++; //cache to memory
             }
         }
     }
     if (!hit) { //store miss
-        cache.store_misses++;    
+        cache.store_misses++;  
         if (wa) {//write allocate
-            //$(*it2.slot).tag = tag;
-            cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100;
+            cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100; //get from memory
+            cache.total_cycles++;//cache to main memory
             unsigned total_cycles = cache.total_cycles;
             load(address, cache, lru);
             cache.load_misses--;
             cache.total_cycles = total_cycles;
-            //TO DO: increment write allocate counter; write to memory/cycle count stuff
         }
         else {//no write allocate
-            //TO DO: increment no write allocate counter; write to memory/cycle count stuff
+            //cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100; //write directly from main memory
         }
     }
 }
