@@ -11,19 +11,6 @@
 #include <cmath>
 #include "cachesimfuncs.h"
 
-//README
-//the error is not that something is doubling up
-//error is not in read reading in wrong chunks
-    //changed read for mem address to simplify but should not be an issue
-//not that the offset, index, tag are spitting out junk
-    //using bit shift for get offset resulted in junk when shifting sometimes
-    //junk, aka, very big numbers
-//works for small cases like input, read03, write01, input2
-//errors with big files like gcc
-//error for basic 1 4 4 case with gcc but smaller margin of error vs
-//bigger cache like 256 4 16
-
-
 struct Block{
     uint32_t offset;
     uint32_t tag;
@@ -34,7 +21,6 @@ struct Block{
 
 struct Sets {
     std::vector <struct Block> blocks; //in direct mapping/fully associative, size of 1 
-    //uint32_t index; //non-applicable in fully associative
     uint32_t filled; //number of valid blocks in set
     unsigned access_ts_counter; //$
     unsigned load_ts_counter; //$
@@ -64,8 +50,7 @@ struct Cache buildCache(unsigned numsets, unsigned blocksperset, unsigned bytesp
 
     for (unsigned i = 0; i < numsets; i++) { //initialize each set
         for (unsigned j = 0; j < blocksperset; j++) { //initialize blocks in each set
-            //initializing a slot
-            create_set.valid = false;
+            create_set.valid = false; //initializing a slot
             create_set.dirty = false;
             create_set.tag = 0;
             create_set.load_ts = 0;
@@ -74,7 +59,6 @@ struct Cache buildCache(unsigned numsets, unsigned blocksperset, unsigned bytesp
             sets.push_back(create_set); //add block (set) to sets
         }
         create_sets.blocks = sets;
-        //create_sets.index = i;
         create_sets.filled = 0;
         create_sets.access_ts_counter = 0; //$
         create_sets.load_ts_counter = 0; //$
@@ -183,6 +167,7 @@ int read(struct Cache &cache, char &ls, char memaddress[], char tmp[]) {
  * write to standard output
  *
  * Parameters:
+ *   cache - Cache struct
  *   
  */
 void write(struct Cache cache) {
@@ -195,20 +180,64 @@ void write(struct Cache cache) {
     std::cout << "Total cycles: " << cache.total_cycles << std::endl;
 }
 
-// //char to int helper function
-// int hexchar_to_int(char hex) {
-//     char hexchar[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-//     for (int i = 0; i < 16; i++) {
-//         if (hexchar[i] == hex) {
-//             return i;
-//         }
-//     }
-//     return 0;
-// }
-
-//hex to dec function 
+/*
+ * hexidecimal to decimal function 
+ *
+ * Parameters:
+ *   hex_unformatted - char array
+ *   
+ */
 unsigned hex_to_dec(char hex_unformated[]) {
     return std::stoul (hex_unformated,nullptr,16);
+}
+
+/*
+ * load miss handling helper function
+ *
+ * Parameters:
+ *   cache - Cache struct
+ *   found_empty - bool
+ *   lru - bool
+ *   lru_index - int
+ *   fifo_index - int
+ *   blocks - vector of type Block struct
+ *   block_list - vector of type Sets struct
+ *   index -  unsigned
+ *   offset - unsigned
+ *   tag - unsigned
+ *   next_empty - unsigned int
+ */
+void load_miss(struct Cache &cache, bool found_empty, bool lru, int lru_index, int fifo_index, std::vector<struct Block> &blocks, std::vector <struct Sets> &block_list, unsigned index, unsigned offset, unsigned tag, unsigned int next_empty) {
+    cache.load_misses++;
+    cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100; //from memory to cache
+    cache.total_cycles++; //from memory to cache
+    cache.total_cycles++; //from cache to CPU
+
+    if (!found_empty) {//no more empty spots, evict
+        int ind = 0; 
+        if (lru) {
+            ind = lru_index;
+        }
+        else {
+            ind = fifo_index;
+        }
+        blocks.at(ind).tag = tag;
+        blocks.at(ind).offset = offset;
+        blocks.at(ind).access_ts = block_list.at(index).access_ts_counter;
+        blocks.at(ind).load_ts = block_list.at(index).load_ts_counter;//update load ts
+        if (blocks.at(ind).dirty) {
+            cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100; //from CPU to memory
+            blocks.at(ind).dirty = false;
+        }
+    }
+    else {//empty spot exists, find and fill
+        blocks.at(next_empty).tag = tag;
+        blocks.at(lru_index).offset = offset;
+        blocks.at(next_empty).valid = true; 
+        block_list.at(index).filled++;
+        blocks.at(next_empty).access_ts = block_list.at(index).access_ts_counter;
+        blocks.at(next_empty).load_ts = block_list.at(index).load_ts_counter;
+    }
 }
 
 /*
@@ -222,17 +251,14 @@ void load(unsigned address, struct Cache &cache, bool lru) {
     unsigned tag = get_tag(address, cache.bytesperblock, cache.numsets);
     unsigned index = get_index(address, cache.bytesperblock, cache.numsets);
     unsigned offset = get_offset(address, cache.blocksperset, cache.bytesperblock);
-    std::vector <struct Sets> &block_list = cache.block_list;
-
     bool hit = false; //check for if hit, false if miss
     unsigned next_empty = 0;
     unsigned counter = 0; 
     bool found_empty = false;
-
+    std::vector <struct Sets> &block_list = cache.block_list;
     std::vector<struct Block> &blocks = block_list.at(index).blocks;
     block_list.at(index).load_ts_counter++;
     block_list.at(index).access_ts_counter++;
-
     unsigned lru_ts = blocks.at(0).access_ts;
     unsigned fifo_ts = blocks.at(0).load_ts;
     int lru_index = 0;
@@ -258,41 +284,29 @@ void load(unsigned address, struct Cache &cache, bool lru) {
         }
         counter++;
     }
-
     if (!hit) {//iterated through cache and could not find, load miss 
-        cache.load_misses++;
-        cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100; //from memory to cache
-        cache.total_cycles++; //from memory to cache
-        cache.total_cycles++; //from cache to CPU
+        load_miss(cache, found_empty, lru, lru_index, fifo_index, blocks, block_list, index, offset, tag, next_empty); 
+    }
+}
 
-        if (!found_empty) {//no more empty spots, evict
-            int ind = 0; 
-            if (lru) {
-                ind = lru_index;
-            }
-            else {
-                ind = fifo_index;
-            }
-            blocks.at(ind).tag = tag;
-            blocks.at(ind).offset = offset;
-            blocks.at(ind).access_ts = block_list.at(index).access_ts_counter;
-            blocks.at(ind).load_ts = block_list.at(index).load_ts_counter;//update load ts
-            if (blocks.at(ind).dirty) {
-                cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100; //from CPU to memory
-                //cache.total_cycles++; //CPU to memory
-                blocks.at(ind).dirty = false;
-            }
-            //cache.total_cycles++;
-            //cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100;
-        }
-        else {//empty spot exists, find and fill
-            blocks.at(next_empty).tag = tag;
-            blocks.at(lru_index).offset = offset;
-            blocks.at(next_empty).valid = true; 
-            block_list.at(index).filled++;
-            blocks.at(next_empty).access_ts = block_list.at(index).access_ts_counter;
-            blocks.at(next_empty).load_ts = block_list.at(index).load_ts_counter;
-        }
+/*
+ * store miss handling helper function
+ *
+ * Parameters:
+ *   cache - Cache struct
+ *   address - unsigned
+ *   lru - bool
+ *   wb - bool
+ *   wa - bool
+ */
+void store_miss(struct Cache &cache, unsigned int address, bool lru, bool wb, bool wa) {
+    cache.store_misses++; 
+    if (wa) {//write allocate
+        load(address, cache, lru);
+        cache.load_misses--;
+    }
+    if (!wb) { //write through
+        cache.total_cycles+=100;
     }
 }
 
@@ -320,7 +334,6 @@ void store(unsigned address, struct Cache &cache, bool wb, bool wa, bool lru) {
         if (it.valid && it.tag == tag) { //store hit
             hit = true;
             cache.store_hits++;
-            //cache.total_cycles++;//CPU to cache
             it.access_ts = block_list.at(index).access_ts_counter;//update access ts
             if (wb) { //write back
                 it.dirty = true;
@@ -328,29 +341,11 @@ void store(unsigned address, struct Cache &cache, bool wb, bool wa, bool lru) {
             }
             else { //write through
                 cache.total_cycles += 100; //from CPU to Memory
-                //cache.total_cycles++; //from CPU to Cache
             }
         }
     }
     if (!hit) { //store miss
-        cache.store_misses++;  
-        if (wa) {//write allocate
-            //cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100; //from memory to Cache
-            //cache.total_cycles++; //from memory to cache
-            //cache.total_cycles++; //CPU to cache
-            //cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100; //CPU to memory
-            //unsigned total_cycles = cache.total_cycles;
-            load(address, cache, lru);
-            cache.load_misses--;
-           // cache.total_cycles = total_cycles;
-            //cache.total_cycles++;//Cache to CPU
-        }
-        if (!wb) { //write through
-            cache.total_cycles+=100;
-        }
-        // else {//no write allocate
-        //     //cache.total_cycles = cache.total_cycles + (cache.bytesperblock/4) * 100; //write directly from main memory
-        // }
+        store_miss(cache, address, lru, wb, wa);  
     }
 }
 
