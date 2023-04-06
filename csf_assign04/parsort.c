@@ -37,8 +37,30 @@ void merge(int64_t *arr, size_t begin, size_t mid, size_t end, int64_t *temparr)
   }
 }
 
+int64_t comparator (const void * p1, const void * p2)
+{
+  return (*(int64_t*)p1 - *(int64_t*)p2);
+}
+
 void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
   // TODO: implement
+  int numelements = (int)(end - begin);
+  int arr[100] = {0};
+  int temparr[numelements] = {0};
+  if (numelements <= threshold) {
+    //sort the elements sequentially
+    qsort(*arr, numelements, sizeof(int64_t), comparator);
+  }
+  else {
+    //in parallel {
+      //recursively sort the left half of the sequence
+      //recursively sort the right half of the sequence
+    //}
+    //merge the sorted sequences into a temp array
+    size_t mid = (end - begin) /2;
+    merge(*arr, begin, mid, end, *temparr);
+    //copy the contents of the temp array back to the original array
+  }
 }
 
 int main(int argc, char **argv) {
