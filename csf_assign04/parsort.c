@@ -43,11 +43,6 @@ void merge(int64_t *arr, size_t begin, size_t mid, size_t end, int64_t *temparr)
   }
 }
 
-int64_t comparator (const void * p1, const void * p2)
-{
-  return (*(int64_t*)p1 - *(int64_t*)p2);
-}
-
 void do_child_work() {
   //TODO
 }
@@ -128,7 +123,7 @@ int main(int argc, char **argv) {
   // depletion!
 
   // TODO: sort the data!
-  merge_sort(data, 0, (file_size_in_bytes/sizeof(data[0])), 1);
+  merge_sort(data, 0, (file_size_in_bytes/sizeof(data[0])), argv[2]);
 
   // TODO: unmap and close the file
   munmap(data, file_size_in_bytes);
