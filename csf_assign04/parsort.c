@@ -42,11 +42,15 @@ int64_t comparator (const void * p1, const void * p2)
   return (*(int64_t*)p1 - *(int64_t*)p2);
 }
 
+void do_child_work() {
+  //TODO
+}
+
 void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
   // TODO: implement
-  int numelements = (int)(end - begin);
-  int arr[100] = {0};
-  int temparr[numelements] = {0};
+  size_t mid = (end - begin) /2;
+  int numelements = sizeof(arr)/sizeof(arr[0]);
+  int64_t *temparr = (int*)malloc(numelements*sizeof(int64_t)); 
   if (numelements <= threshold) {
     //sort the elements sequentially
     qsort(*arr, numelements, sizeof(int64_t), comparator);
@@ -54,12 +58,17 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
   else {
     //in parallel {
       //recursively sort the left half of the sequence
+      merge_sort(*arr, begin, mid, 1);
       //recursively sort the right half of the sequence
+      merge_sort(*arr, mid, end, 1);
     //}
     //merge the sorted sequences into a temp array
-    size_t mid = (end - begin) /2;
     merge(*arr, begin, mid, end, *temparr);
     //copy the contents of the temp array back to the original array
+    for (int i = 0; i < numelements; i++) {
+      *arr++ = *temparr++;
+    }
+    free(temparr);
   }
 }
 
@@ -117,7 +126,7 @@ int main(int argc, char **argv) {
 
   // TODO: unmap and close the file
   munmap(data, file_size_in_bytes);
-  
+  close(data);
 
   // TODO: exit with a 0 exit code if sort was successful
   return 0;
