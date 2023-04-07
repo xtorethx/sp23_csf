@@ -12,9 +12,9 @@
 
 // Merge the elements in the sorted ranges [begin, mid) and [mid, end),
 // copying the result into temparr.
-int compare_i64(int64_t* a, int64_t* b) {
-  if (*a < *b) return -1;
-  if (*a > *b) return 1;
+int compare_i64(const void * a, const void * b) {
+  if (*(int64_t*)a < *(int64_t*)b) return -1;
+  if (*(int64_t*)a > *(int64_t*)b) return 1;
   return 0;
 }
 
@@ -59,7 +59,7 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
   int64_t *temparr = (int64_t*)malloc(numelements*sizeof(int64_t)); 
   if (numelements <= threshold) {
     //sort the elements sequentially
-    qsort(arr, numelements, sizeof(int64_t), comparator);
+    qsort(arr, numelements, sizeof(int64_t), compare_i64);
   }
   else {
     //in parallel {
@@ -128,7 +128,7 @@ int main(int argc, char **argv) {
   // depletion!
 
   // TODO: sort the data!
-  merge_sort(data, 0, (sizeof(data)/sizeof(data[0])), 1);
+  merge_sort(data, 0, (file_size_in_bytes/sizeof(data[0])), 1);
 
   // TODO: unmap and close the file
   munmap(data, file_size_in_bytes);
