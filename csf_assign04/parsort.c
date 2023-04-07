@@ -12,9 +12,9 @@
 
 // Merge the elements in the sorted ranges [begin, mid) and [mid, end),
 // copying the result into temparr.
-int compare_i64(int64_t a, int64_t b) {
-  if (a < b) return -1;
-  if (a > b) return 1;
+int compare_i64(int64_t* a, int64_t* b) {
+  if (*a < *b) return -1;
+  if (*a > *b) return 1;
   return 0;
 }
 
@@ -34,7 +34,7 @@ void merge(int64_t *arr, size_t begin, size_t mid, size_t end, int64_t *temparr)
     else if (at_end_r)
       *dst++ = *left++;
     else {
-      int cmp = compare_i64(*left, *right);
+      int cmp = compare_i64(left, right);
       if (cmp <= 0)
         *dst++ = *left++;
       else
