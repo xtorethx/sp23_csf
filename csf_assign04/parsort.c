@@ -12,6 +12,12 @@
 
 // Merge the elements in the sorted ranges [begin, mid) and [mid, end),
 // copying the result into temparr.
+int compare_i64(int64_t a, int64_t b) {
+  if (a < b) return -1;
+  if (a > b) return 1;
+  return 0;
+}
+
 void merge(int64_t *arr, size_t begin, size_t mid, size_t end, int64_t *temparr) {
   int64_t *endl = arr + mid;
   int64_t *endr = arr + end;
@@ -28,7 +34,7 @@ void merge(int64_t *arr, size_t begin, size_t mid, size_t end, int64_t *temparr)
     else if (at_end_r)
       *dst++ = *left++;
     else {
-      int cmp = compare_i64(left, right);
+      int cmp = compare_i64(*left, *right);
       if (cmp <= 0)
         *dst++ = *left++;
       else
@@ -49,21 +55,21 @@ void do_child_work() {
 void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
   // TODO: implement
   size_t mid = (end - begin) /2;
-  int numelements = sizeof(arr)/sizeof(arr[0]);
-  int64_t *temparr = (int*)malloc(numelements*sizeof(int64_t)); 
+  int numelements = end - begin;
+  int64_t *temparr = (int64_t*)malloc(numelements*sizeof(int64_t)); 
   if (numelements <= threshold) {
     //sort the elements sequentially
-    qsort(*arr, numelements, sizeof(int64_t), comparator);
+    qsort(arr, numelements, sizeof(int64_t), comparator);
   }
   else {
     //in parallel {
       //recursively sort the left half of the sequence
-      merge_sort(*arr, begin, mid, 1);
+      merge_sort(arr, begin, mid, threshold);
       //recursively sort the right half of the sequence
-      merge_sort(*arr, mid, end, 1);
+      merge_sort(arr, mid, end, threshold);
     //}
     //merge the sorted sequences into a temp array
-    merge(*arr, begin, mid, end, *temparr);
+    merge(arr, begin, mid, end, temparr);
     //copy the contents of the temp array back to the original array
     for (int i = 0; i < numelements; i++) {
       *arr++ = *temparr++;
