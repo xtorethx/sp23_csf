@@ -63,7 +63,7 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
       if (pid_l == -1) {
           // fork failed to start a new process
           fprintf(stderr, "Error: fork failed to start a new process");
-          return 6;
+          exit(6);
       } else if (pid_l == 0) {
           int retcode = do_child_work();
           exit(retcode);
@@ -75,7 +75,7 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
       if (pid_r == -1) {
           // fork failed to start a new process
           fprintf(stderr, "Error: fork failed to start a new process");
-          return 7;
+          exit(7);
       } else if (pid_r == 0) {
           int retcode = do_child_work();
           exit(retcode);
