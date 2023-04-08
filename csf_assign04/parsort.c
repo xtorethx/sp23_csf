@@ -45,6 +45,7 @@ void merge(int64_t *arr, size_t begin, size_t mid, size_t end, int64_t *temparr)
 
 int do_child_work() {
   //TODO
+  
 }
 
 void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
@@ -69,16 +70,49 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
           exit(retcode);
       }
       // if pid is not 0, we are in the parent process
-      // WARNING, if the child process path can get here, things will quickly break very badly
+      int wstatus;
+      // blocks until the process indentified by pid_to_wait_for completes
+      pid_t actual_pid_l = waitpid(pid_l, &wstatus, 0);
+      if (actual_pid_l == -1) {
+        // handle waitpid failure
+        fprintf(stderr, "Error: waitpid failure");
+        exit(7);
+      }
+      if (!WIFEXITED(wstatus)) {
+          fprintf(stderr, "Error: subprocess crashed, was interrupted, or did not exit normally");
+          exit(8);
+      }
+      if (WEXITSTATUS(wstatus) != 0) {
+          fprintf(stderr, "Error: subprocess returned a non-zero exit code");
+          exit(9);
+      }
+
       //recursively sort the right half of the sequence (merge_sort(arr, mid, end, threshold);)
       pid_t pid_r = fork();
       if (pid_r == -1) {
           // fork failed to start a new process
           fprintf(stderr, "Error: fork failed to start a new process");
-          exit(7);
+          exit(10);
       } else if (pid_r == 0) {
           int retcode = do_child_work();
           exit(retcode);
+      }
+      // if pid is not 0, we are in the parent process
+      int wstatus;
+      // blocks until the process indentified by pid_to_wait_for completes
+      pid_t actual_pid_l = waitpid(pid_l, &wstatus, 0);
+      if (actual_pid_l == -1) {
+        // handle waitpid failure
+        fprintf(stderr, "Error: waitpid failure");
+        exit(11);
+      }
+      if (!WIFEXITED(wstatus)) {
+          fprintf(stderr, "Error: subprocess crashed, was interrupted, or did not exit normally");
+          exit(12);
+      }
+      if (WEXITSTATUS(wstatus) != 0) {
+          fprintf(stderr, "Error: subprocess returned a non-zero exit code");
+          exit(13);
       }
     //}
     //merge the sorted sequences into a temp array
