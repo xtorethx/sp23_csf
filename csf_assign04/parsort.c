@@ -45,6 +45,7 @@ void merge(int64_t *arr, size_t begin, size_t mid, size_t end, int64_t *temparr)
 
 int do_child_work(int64_t *arr, size_t begin, size_t end, size_t threshold) {
   merge_sort(arr, begin, end, threshold);
+  return 0;
 }
 
 void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
@@ -69,19 +70,19 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
           exit(retcode);
       }
       // if pid is not 0, we are in the parent process
-      int wstatus;
+      int wstatus_l;
       // blocks until the process indentified by pid_to_wait_for completes
-      pid_t actual_pid_l = waitpid(pid_l, &wstatus, 0);
+      pid_t actual_pid_l = waitpid(pid_l, &wstatus_l, 0);
       if (actual_pid_l == -1) {
         // handle waitpid failure
         fprintf(stderr, "Error: waitpid failure");
         exit(7);
       }
-      if (!WIFEXITED(wstatus)) {
+      if (!WIFEXITED(wstatus_l)) {
           fprintf(stderr, "Error: subprocess crashed, was interrupted, or did not exit normally");
           exit(8);
       }
-      if (WEXITSTATUS(wstatus) != 0) {
+      if (WEXITSTATUS(wstatus_l) != 0) {
           fprintf(stderr, "Error: subprocess returned a non-zero exit code");
           exit(9);
       }
@@ -97,19 +98,19 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
           exit(retcode);
       }
       // if pid is not 0, we are in the parent process
-      int wstatus;
+      int wstatus_r;
       // blocks until the process indentified by pid_to_wait_for completes
-      pid_t actual_pid_l = waitpid(pid_l, &wstatus, 0);
-      if (actual_pid_l == -1) {
+      pid_t actual_pid_r = waitpid(pid_r, &wstatus_r, 0);
+      if (actual_pid_r == -1) {
         // handle waitpid failure
         fprintf(stderr, "Error: waitpid failure");
         exit(11);
       }
-      if (!WIFEXITED(wstatus)) {
+      if (!WIFEXITED(wstatus_r)) {
           fprintf(stderr, "Error: subprocess crashed, was interrupted, or did not exit normally");
           exit(12);
       }
-      if (WEXITSTATUS(wstatus) != 0) {
+      if (WEXITSTATUS(wstatus_r) != 0) {
           fprintf(stderr, "Error: subprocess returned a non-zero exit code");
           exit(13);
       }
@@ -133,7 +134,7 @@ int main(int argc, char **argv) {
 
   // process command line arguments
   const char *filename = argv[1];
-  char *end;
+  char *end; 
   size_t threshold = (size_t) strtoul(argv[2], &end, 10);
   if (end != argv[2] + strlen(argv[2])) {
     /* TODO: report an error (threshold value is invalid) */;
@@ -166,7 +167,7 @@ int main(int argc, char **argv) {
   close(fd);
   if (data == MAP_FAILED) {
       // handle mmap error and exit
-      fprintf(stderr, "Error: mmap error");
+      fprintf(stderr, "Error: mmap error"); 
       return 5;
   }
   // *data now behaves like a standard array of int64_t. Be careful though! Going off the end
@@ -174,7 +175,7 @@ int main(int argc, char **argv) {
   // depletion!
 
   // TODO: sort the data!
-  merge_sort(data, 0, (file_size_in_bytes/sizeof(data[0])), argv[2]);
+  merge_sort(data, 0, (file_size_in_bytes/sizeof(data[0])), threshold);
 
   // TODO: unmap and close the file
   munmap(data, file_size_in_bytes);
