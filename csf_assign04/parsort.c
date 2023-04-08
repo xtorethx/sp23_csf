@@ -43,9 +43,8 @@ void merge(int64_t *arr, size_t begin, size_t mid, size_t end, int64_t *temparr)
   }
 }
 
-int do_child_work() {
-  //TODO
-  
+int do_child_work(int64_t *arr, size_t begin, size_t end, size_t threshold) {
+  merge_sort(arr, begin, end, threshold);
 }
 
 void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
@@ -66,7 +65,7 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
           fprintf(stderr, "Error: fork failed to start a new process");
           exit(6);
       } else if (pid_l == 0) {
-          int retcode = do_child_work();
+          int retcode = do_child_work(arr, begin, mid, threshold);
           exit(retcode);
       }
       // if pid is not 0, we are in the parent process
@@ -94,7 +93,7 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
           fprintf(stderr, "Error: fork failed to start a new process");
           exit(10);
       } else if (pid_r == 0) {
-          int retcode = do_child_work();
+          int retcode = do_child_work(arr, mid, end, threshold);
           exit(retcode);
       }
       // if pid is not 0, we are in the parent process
