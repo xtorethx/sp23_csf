@@ -43,7 +43,7 @@ void merge(int64_t *arr, size_t begin, size_t mid, size_t end, int64_t *temparr)
   }
 }
 
-void do_child_work() {
+int do_child_work() {
   //TODO
 }
 
@@ -58,10 +58,28 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
   }
   else {
     //in parallel {
-      //recursively sort the left half of the sequence
-      merge_sort(arr, begin, mid, threshold);
-      //recursively sort the right half of the sequence
-      merge_sort(arr, mid, end, threshold);
+      //recursively sort the left half of the sequence (merge_sort(arr, begin, mid, threshold);)
+      pid_t pid_l = fork();
+      if (pid_l == -1) {
+          // fork failed to start a new process
+          fprintf(stderr, "Error: fork failed to start a new process");
+          return 6;
+      } else if (pid_l == 0) {
+          int retcode = do_child_work();
+          exit(retcode);
+      }
+      // if pid is not 0, we are in the parent process
+      // WARNING, if the child process path can get here, things will quickly break very badly
+      //recursively sort the right half of the sequence (merge_sort(arr, mid, end, threshold);)
+      pid_t pid_r = fork();
+      if (pid_r == -1) {
+          // fork failed to start a new process
+          fprintf(stderr, "Error: fork failed to start a new process");
+          return 7;
+      } else if (pid_r == 0) {
+          int retcode = do_child_work();
+          exit(retcode);
+      }
     //}
     //merge the sorted sequences into a temp array
     merge(arr, begin, mid, end, temparr);
