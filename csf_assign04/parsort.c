@@ -52,75 +52,71 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
   // TODO: implement
   size_t mid = (end - begin) /2;
   int numelements = end - begin;
-  int64_t *temparr = (int64_t*)malloc(numelements*sizeof(int64_t)); 
+  int64_t *temparr = (int64_t*)malloc(numelements*sizeof(int64_t));
   if (numelements <= threshold) {
     //sort the elements sequentially
     qsort(arr, numelements, sizeof(int64_t), compare_i64);
   }
   else {
-    //in parallel {
-      //recursively sort the left half of the sequence (merge_sort(arr, begin, mid, threshold);)
-      pid_t pid_l = fork();
-      pid_t pid_r;
-      if (pid_l == -1) {
+    //recursively sort the left half of the sequence (merge_sort(arr, begin, mid, threshold);)
+    pid_t pid_l, pid_r;
+    pid_l = fork();
+    if (pid_l == -1) {
+        // fork failed to start a new process
+        fprintf(stderr, "Error: fork failed to start a new process");
+        exit(6);
+    } else if (pid_l == 0) {
+        int retcode = do_child_work(arr, begin, mid, threshold);
+        exit(retcode);
+    } else {
+      //recursively sort the right half of the sequence (merge_sort(arr, mid, end, threshold);)
+      pid_r = fork();
+      if (pid_r == -1) {
           // fork failed to start a new process
           fprintf(stderr, "Error: fork failed to start a new process");
-          exit(6);
-      } else if (pid_l == 0) {
-          int retcode = do_child_work(arr, begin, mid, threshold);
+          exit(10);
+      } else if (pid_r == 0) {
+          int retcode = do_child_work(arr, mid, end, threshold);
           exit(retcode);
-      } else {
-        //recursively sort the right half of the sequence (merge_sort(arr, mid, end, threshold);)
-        pid_t pid_r = fork();
-        if (pid_r == -1) {
-            // fork failed to start a new process
-            fprintf(stderr, "Error: fork failed to start a new process");
-            exit(10);
-        } else if (pid_r == 0) {
-            int retcode = do_child_work(arr, mid, end, threshold);
-            exit(retcode);
-        }
       }
-      // if pid is not 0, we are in the parent process
-      int wstatus;
-      // blocks until the process indentified by pid_to_wait_for completes
-      pid_t actual_pid_l = waitpid(pid_l, &wstatus, 0);
-      if (actual_pid_l == -1) {
-        // handle waitpid failure
-        fprintf(stderr, "Error: waitpid failure");
-        exit(7);
-      }
-      if (!WIFEXITED(wstatus)) {
-          fprintf(stderr, "Error: subprocess crashed, was interrupted, or did not exit normally");
-          exit(8);
-      }
-      if (WEXITSTATUS(wstatus) != 0) {
-          fprintf(stderr, "Error: subprocess returned a non-zero exit code");
-          exit(9);
-      }
-      // blocks until the process indentified by pid_to_wait_for completes
-      pid_t actual_pid_r = waitpid(pid_r, &wstatus, 0);
-      if (actual_pid_r == -1) {
-        // handle waitpid failure
-        fprintf(stderr, "Error: waitpid failure");
-        exit(11);
-      }
-      if (!WIFEXITED(wstatus)) {
-          fprintf(stderr, "Error: subprocess crashed, was interrupted, or did not exit normally");
-          exit(12);
-      }
-      if (WEXITSTATUS(wstatus) != 0) {
-          fprintf(stderr, "Error: subprocess returned a non-zero exit code");
-          exit(13);
-      }
-    //}
+    }
+    // if pid is not 0, we are in the parent process
+    int wstatus_l, wstatus_r;
+    // blocks until the process indentified by pid_to_wait_for completes
+    pid_t actual_pid_l = waitpid(pid_l, &wstatus_l, 0);
+    if (actual_pid_l == -1) {
+      // handle waitpid failure
+      fprintf(stderr, "Error: waitpid failure");
+      exit(7);
+    }
+    if (!WIFEXITED(wstatus_l)) {
+        fprintf(stderr, "Error: subprocess crashed, was interrupted, or did not exit normally");
+        exit(8);
+    }
+    if (WEXITSTATUS(wstatus_l) != 0) {
+        fprintf(stderr, "Error: subprocess returned a non-zero exit code");
+        exit(9);
+    }
+    // blocks until the process indentified by pid_to_wait_for completes
+    pid_t actual_pid_r = waitpid(pid_r, &wstatus_r, 0);
+    if (actual_pid_r == -1) {
+      // handle waitpid failure
+      fprintf(stderr, "Error: waitpid failure");
+      exit(11);
+    }
+    if (!WIFEXITED(wstatus_r)) {
+        fprintf(stderr, "Error: subprocess crashed, was interrupted, or did not exit normally");
+        exit(12);
+    }
+    if (WEXITSTATUS(wstatus_r) != 0) {
+        fprintf(stderr, "Error: subprocess returned a non-zero exit code");
+        exit(13);
+    }
     //merge the sorted sequences into a temp array
     merge(arr, begin, mid, end, temparr);
     //copy the contents of the temp array back to the original array
-    for (int i = 0; i < numelements; i++) {
-      *arr++ = *temparr++;
-    }
-    free(temparr);
+    memcpy(arr, temparr, (size_t)(numelements*sizeof(int64_t)));
+    free(temparr); 
   }
 }
 
@@ -129,7 +125,7 @@ int main(int argc, char **argv) {
   if (argc != 3) {
     fprintf(stderr, "Usage: %s <filename> <sequential threshold>\n", argv[0]);
     return 1;
-  }
+  } 
 
   // process command line arguments
   const char *filename = argv[1];
@@ -178,7 +174,7 @@ int main(int argc, char **argv) {
 
   // TODO: unmap and close the file
   munmap(data, file_size_in_bytes);
-  close(data);
+  //close(data);
 
   // TODO: exit with a 0 exit code if sort was successful
   return 0;
