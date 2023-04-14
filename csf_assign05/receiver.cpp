@@ -19,35 +19,59 @@ int main(int argc, char **argv) {
   std::string username = argv[3];
   std::string room_name = argv[4];
 
-  Connection conn;
-
   // TODO: connect to server
-  conn.connect(server_hostname, server_port);
+  Connection receiver;
+  receiver.connect(server_hostname, server_port);
+  if (!receiver.is_open()) {
+    std::cerr << "Connection cannot be opened!" << std::endl;
+    return 1;
+  }
 
   // TODO: send rlogin and join messages (expect a response from
   //       the server for each one)
   Message rlogin;
   rlogin.tag = TAG_RLOGIN;
   rlogin.data = username;
-  conn.send(rlogin);
+  receiver.send(rlogin);
+
+  Message ret_msg;
+  receiver.receive(ret_msg);
+  if (ret_msg.tag == TAG_ERR) {
+    std::cerr << ret_msg.data << std::endl;
+    return 1;
+  }
 
   Message join;
   join.tag = TAG_JOIN;
   join.data = room_name;
-  conn.send(join);
-  
+  receiver.send(join);
 
+  receiver.receive(ret_msg);
+  if (ret_msg.tag == TAG_ERR) {
+    std::cerr << ret_msg.data << std::endl;
+    return 1;
+  }
+ 
   // TODO: loop waiting for messages from server
   //       (which should be tagged with TAG_DELIVERY)
   std::string line = NULL;
   while(std::getline(std::cin, line)) {
     std::stringstream ss;
+    if (line.empty()) {
+      continue;
+    }
 
-    //convert to stringstream
-    //check if first word matches command
-    //remove first word
-    //continue action with rest of method (deliver)
-    //
+    std::stringstream sin(line);
+    std::string word;
+    sin >> word;
+    Message msg;
+
+    // handle delivery
+    // delivery tag:room:sender:message
+    // split msg.data into room and sender and msg
+    // compare with room for match
+    // display
+
   }
 
   return 0;
