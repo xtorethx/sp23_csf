@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <vector>
 #include <stdexcept>
 #include "csapp.h"
@@ -21,13 +22,33 @@ int main(int argc, char **argv) {
   Connection conn;
 
   // TODO: connect to server
+  conn.connect(server_hostname, server_port);
 
   // TODO: send rlogin and join messages (expect a response from
   //       the server for each one)
+  Message rlogin;
+  rlogin.tag = TAG_RLOGIN;
+  rlogin.data = username;
+  conn.send(rlogin);
+
+  Message join;
+  join.tag = TAG_JOIN;
+  join.data = room_name;
+  conn.send(join);
+  
 
   // TODO: loop waiting for messages from server
   //       (which should be tagged with TAG_DELIVERY)
+  std::string line = NULL;
+  while(std::getline(std::cin, line)) {
+    std::stringstream ss;
 
+    //convert to stringstream
+    //check if first word matches command
+    //remove first word
+    //continue action with rest of method (deliver)
+    //
+  }
 
   return 0;
 }
