@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
   // return message
   Message ret_msg;
   receiver.receive(ret_msg);
-  if (ret_msg.tag == TAG_ERR) {
+  if (ret_msg.tag != TAG_OK) {
     std::cerr << ret_msg.data << std::endl;
     return 1;
   }
@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
   receiver.send(join);
 
   receiver.receive(ret_msg);
-  if (ret_msg.tag == TAG_ERR) {
+  if (ret_msg.tag != TAG_OK) {
     std::cerr << ret_msg.data << std::endl;
     return 1;
   }
@@ -85,6 +85,7 @@ int main(int argc, char **argv) {
         std::cout << sender << ": " << message;
       }
     }
+    line.clear();
   }
 
   return 0;

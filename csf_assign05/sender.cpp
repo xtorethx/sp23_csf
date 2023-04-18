@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
 
   Message ret_msg;
   sender.receive(ret_msg);
-  if (ret_msg.tag == TAG_ERR) {
+  if (ret_msg.tag != TAG_OK) {
     std::cerr << ret_msg.data << std::endl;
     return 1;
   }
@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
       sender.send(msg);
       
       sender.receive(ret_msg);
-      if (ret_msg.tag == TAG_ERR) {
+      if (ret_msg.tag != TAG_OK) {
         std::cerr << ret_msg.data << std::endl;
         return 1;
       }
@@ -79,9 +79,9 @@ int main(int argc, char **argv) {
       sender.send(msg);
       
       sender.receive(ret_msg);
-      if (ret_msg.tag == TAG_ERR) {
+      if (ret_msg.tag != TAG_OK) {
         std::cerr << ret_msg.data << std::endl;
-      } 
+      }
       
     } else if (word.compare("/quit")) {
       msg.tag = TAG_LEAVE;
@@ -92,8 +92,10 @@ int main(int argc, char **argv) {
       if (ret_msg.tag == TAG_ERR) {
         std::cerr << ret_msg.data << std::endl;
         return 1;
-      } else {
+      } else if (ret_msg.tag == TAG_OK) {
         return 0;
+      } else {
+        return 2;
       }
 
     } else if (word[0] == '/') {
@@ -105,12 +107,11 @@ int main(int argc, char **argv) {
       sender.send(msg);
 
       sender.receive(ret_msg);
-      if (ret_msg.tag == TAG_ERR) {
+      if (ret_msg.tag != TAG_OK) {
         std::cerr << ret_msg.data << std::endl;
       }
-
     }
-
+    line.clear()
   }
 
   return 0;
