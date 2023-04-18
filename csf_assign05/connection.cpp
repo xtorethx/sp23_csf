@@ -47,7 +47,7 @@ void Connection::close() {
 bool Connection::send(const Message &msg) {
   // TODO: send a message
   std::string message;
-  message = msg.tag + ": " + msg.data;
+  message = msg.tag + ":" + msg.data +"\n";
 
   int bytes_sent = rio_writen(m_fd, message.c_str(), message.length());
   // return true if successful, false if not

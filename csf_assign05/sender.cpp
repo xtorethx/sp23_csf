@@ -103,7 +103,7 @@ int main(int argc, char **argv) {
 
     } else {
       msg.tag = TAG_SENDALL;
-      msg.data = line;
+      msg.data = trim(line);
       sender.send(msg);
 
       sender.receive(ret_msg);
@@ -111,7 +111,7 @@ int main(int argc, char **argv) {
         std::cerr << ret_msg.data << std::endl;
       }
     }
-    line.clear()
+    line.clear();
   }
 
   return 0;
