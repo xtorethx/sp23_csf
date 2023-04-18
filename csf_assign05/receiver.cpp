@@ -55,12 +55,7 @@ int main(int argc, char **argv) {
  
   // TODO: loop waiting for messages from server
   //       (which should be tagged with TAG_DELIVERY)
-  std::string line;
   while(true) {//read in line
-    if (line.empty()) {
-      continue;
-    }
-
     // handle delivery
     std::string room;
     std::string sender;
@@ -73,16 +68,15 @@ int main(int argc, char **argv) {
 
     if (msg.tag == "delivery") {
       // compare with room for match
+      std::stringstream ss(msg.data);
+      std::getline(ss, room, ':'); // room
       if (room == room_name) {
-        std::stringstream ss(msg.data);
-        std::getline(ss, room, ':'); // room
         std::getline(ss, sender, ':'); // sender
-        std::getline(ss, sender, ':'); // message
+        std::getline(ss, message, ':'); // message
         // display
         std::cout << sender << ":" << message;
       }
     }
-    line.clear();
   }
 
   return 0;
