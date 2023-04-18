@@ -27,13 +27,14 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  // TODO: send rlogin and join messages (expect a response from
-  //       the server for each one)
+  // TODO: send rlogin and join messages (expect a response from the server for each one)
+  // send rlogin
   Message rlogin;
   rlogin.tag = TAG_RLOGIN;
   rlogin.data = username;
   receiver.send(rlogin);
 
+  // return message
   Message ret_msg;
   receiver.receive(ret_msg);
   if (ret_msg.tag == TAG_ERR) {
@@ -55,23 +56,35 @@ int main(int argc, char **argv) {
   // TODO: loop waiting for messages from server
   //       (which should be tagged with TAG_DELIVERY)
   std::string line = NULL;
-  while(std::getline(std::cin, line)) {
-    std::stringstream ss;
+  while(true) {//read in line
     if (line.empty()) {
       continue;
     }
 
-    std::stringstream sin(line);
+    // handle delivery
+    std::stringstream ss(line); // convert line to stringstream
     std::string word;
-    sin >> word;
+    std::string sender;
+    std::string message;
     Message msg;
 
-    // handle delivery
     // delivery tag:room:sender:message
     // split msg.data into room and sender and msg
-    // compare with room for match
-    // display
-
+    std::getline(ss, word, ':'); // delivery tag
+    if (word == "delivery") {
+      msg.tag = word;
+      std::getline(ss, word, ':'); // room
+      // compare with room for match
+      if (word == room_name) {
+        msg.data = word;
+        std::getline(ss, word, ':'); // sender
+        sender = word;
+        std::getline(ss, word, ':'); // message
+        message = word;
+        // display
+        std::cout << sender << ": " << message;
+      }
+    }
   }
 
   return 0;

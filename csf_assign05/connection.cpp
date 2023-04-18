@@ -46,7 +46,10 @@ void Connection::close() {
 
 bool Connection::send(const Message &msg) {
   // TODO: send a message
-  int bytes_sent = rio_writen(m_fd, &msg, sizeof(msg));
+  std::string message;
+  message = msg.tag + ": " + msg.data;
+
+  int bytes_sent = rio_writen(m_fd, message.c_str(), message.length());
   // return true if successful, false if not
   // make sure that m_last_result is set appropriately
   m_last_result = (bytes_sent == sizeof(msg)) ? SUCCESS : EOF_OR_ERROR;
@@ -56,7 +59,8 @@ bool Connection::send(const Message &msg) {
 
 bool Connection::receive(Message &msg) {
   // TODO: receive a message, storing its tag and data in msg
-  int bytes_received = rio_readn(m_fd, &msg, sizeof(msg));
+  char message[Message::MAX_LEN];
+  int bytes_received = rio_readlineb(&m_fdbuf, message, Message::MAX_LEN);//use rio_readlineb
   // return true if successful, false if not
   // make sure that m_last_result is set appropriately
   if (bytes_received == 0) {
@@ -66,6 +70,17 @@ bool Connection::receive(Message &msg) {
   } else {
     m_last_result = INVALID_MSG;
   }
+
+  //convert message from char array to string
+  std::string sarray(message);
+  std::string tag;
+  std::string data;
+
+  size_t del = sarray.find(':');
+  tag = sarray.substr(0, del);
+  data = sarray.substr(del+1);
+  msg.tag = tag;
+  msg.data = data;
 
   return m_last_result == SUCCESS;
 }
