@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
   Message ret_msg;
   receiver.receive(ret_msg);
   if (ret_msg.tag != TAG_OK) {
-    std::cerr << ret_msg.data << std::endl;
+    std::cerr << trim(ret_msg.data) << std::endl;
     return 1;
   }
 
@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
 
   receiver.receive(ret_msg);
   if (ret_msg.tag != TAG_OK) {
-    std::cerr << ret_msg.data << std::endl;
+    std::cerr << trim(ret_msg.data) << std::endl;
     return 1;
   }
  

@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
     std::string word;
     sin >> word;
     Message msg;
-    if (word.compare("/join")) {
+    if (word == "/join") {
       msg.tag = TAG_JOIN;
 
       std::string::size_type n = 0;
@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
         return 1;
       }
 
-    } else if (word.compare("/leave")) {
+    } else if (word == "/leave") {
       msg.tag = TAG_LEAVE;
       msg.data = room_name;
       sender.send(msg);
@@ -83,8 +83,8 @@ int main(int argc, char **argv) {
         std::cerr << ret_msg.data << std::endl;
       }
       
-    } else if (word.compare("/quit")) {
-      msg.tag = TAG_LEAVE;
+    } else if (word == "/quit") {
+      msg.tag = TAG_QUIT;
       msg.data = room_name;
       sender.send(msg);
       
